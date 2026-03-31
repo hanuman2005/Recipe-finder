@@ -1,286 +1,354 @@
-import React from "react";
+import React, { useContext } from "react";
+import styled from "styled-components";
+import RecipeCard from "../components/RecipeCard";
 import RegionSelector from "../components/RegionSelector";
-import './explore.css';
 import { Link } from "react-router-dom";
+import { RecipeContext } from "../context/RecipeContext";
+
+const BannerSection = styled.div`
+  background-image: url("https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/foodmunch-banner-bg.png");
+  height: 100vh;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+`;
+
+const BannerHeading = styled.h1`
+  color: white;
+  font-family: "Roboto";
+  font-size: 45px;
+  font-weight: 300;
+  margin-bottom: 1rem;
+`;
+
+const BannerCaption = styled.p`
+  color: #f5f7fa;
+  font-family: "Roboto";
+  font-size: 24px;
+  font-weight: 300;
+  margin-bottom: 1rem;
+`;
+
+const RegionSelectorWrapper = styled.div`
+  padding: 2rem 0;
+  background: #f8f9fa;
+`;
+
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+`;
+
+const ExploreRecipesSection = styled.div`
+  padding: 3rem 0;
+  background-color: white;
+`;
+
+const MenuSectionHeading = styled.h1`
+  color: #183b56;
+  font-family: "Roboto";
+  font-size: 28px;
+  font-weight: 700;
+`;
+
+const MenuItemCard = styled.div`
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+const CategoryEmoji = styled.div`
+  font-size: 3rem;
+  margin-bottom: 10px;
+`;
+
+const MenuCardTitle = styled.h1`
+  color: #333;
+  font-family: "Roboto";
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+`;
+
+const RecipeCount = styled.p`
+  color: #666;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+`;
+
+const MenuItemLink = styled.div`
+  color: #d0b200;
+  font-family: "Roboto";
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CategorySection = styled.div`
+  background: #f8f9fa;
+  padding: 3rem 0;
+`;
+
+const HealthyRecipeSection = styled.div`
+  background-color: #f9fbfe;
+  padding: 3rem 0;
+`;
+
+const EmojiLarge = styled.div`
+  font-size: 5rem;
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+const HealthyRecipeSectionHeading = styled.h1`
+  color: #183b56;
+  font-family: "Roboto";
+  font-size: 28px;
+  font-weight: 700;
+`;
+
+const HealthyRecipeSectionDescription = styled.p`
+  color: #5a7184;
+  font-family: "Roboto";
+  font-size: 16px;
+  line-height: 1.6;
+`;
+
+const StatsSection = styled.div`
+  background: #fff3cd;
+  border-top: 3px solid #ffc107;
+  border-bottom: 3px solid #ffc107;
+  padding: 3rem 0;
+`;
+
+const StatNumber = styled.h2`
+  color: #d48806;
+  font-size: 2rem;
+  margin-bottom: 10px;
+`;
+
+const StatLabel = styled.p`
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 0;
+`;
+
+const Row = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  align-items: ${props => props.alignItems || 'stretch'};
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Col = styled.div`
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+  }
+`;
+
+const RecipeGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  text-align: center;
+  padding: 3rem 0;
+
+  .spinner-border {
+    border: 0.25em solid rgba(0, 0, 0, 0.1);
+    border-right-color: #ffc107;
+    animation: spinner-border 0.75s linear infinite;
+  }
+
+  @keyframes spinner-border {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
 
 const Home = () => {
+  const { recipes = [], loading, error } = useContext(RecipeContext);
+
+  // Get all categories from recipes - with safety check
+  const categories = recipes && Array.isArray(recipes) 
+    ? [...new Set(recipes.map(r => r.category))] 
+    : [];
+
+  const icons = {
+    'Breakfast': '🌅',
+    'Lunch': '🍱',
+    'Dinner': '🌙',
+    'Dessert': '🍰',
+    'Snacks': '🥨',
+    'Non-Vegetarian': '🍗'
+  };
+
   return (
     <div>
-      <div className="banner-section-bg-container d-flex justify-content-center flex-column">
-        <div className="text-center">
-          <h1 className="banner-heading mb-3">Get Delicious Food Recipes Anytime</h1>
-          <p className="banner-caption mb-4">Eat Smart & Healthy</p>
+      {/* ==================== BANNER SECTION ==================== */}
+      <BannerSection>
+        <div>
+          <BannerHeading>🍳 Get Delicious Food Recipes Anytime</BannerHeading>
+          <BannerCaption>Eat Smart & Healthy</BannerCaption>
+        </div>
+      </BannerSection>
 
-        </div>
-      </div>
-      <div className="explore-recipes-section pt-5 pb-5" id="exploreRecipesSection">
-        <div className="container">
-          <div className="row">
-            <div className="col-12">
-              <h1 className="menu-section-heading">Explore Recipes</h1>
-            </div>
-            <div className="col-12 col-md-6 col-lg-3 w-4">
-              <div className="shadow menu-item-card p-3 mb-3">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/em-ginger-fried-img.png"
-                  className="menu-item-image w-100"
-                />
-                <h1 className="menu-card-title">Non-Veg Recipes</h1>
-                <Link to="/category/non veg" className="menu-item-link">
-                  View All
-                  <svg width="16px" height="16px" viewBox="0 0 16 16" className="bi bi-arrow-right-short" fill="#d0b200" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-            <div className="col-12 col-md-6 col-lg-3">
-              <div className="shadow menu-item-card p-3 mb-3">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/em-veg-starters-img.png"
-                  className="menu-item-image w-100"
-                />
-                <h1 className="menu-card-title">Veg Recipes</h1>
-                <Link to="/category/veg" className="menu-item-link">
-                  View All
-                  <svg width="16px" height="16px" viewBox="0 0 16 16" className="bi bi-arrow-right" fill="#d0b200" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-            <div className="col-12 col-md-6 col-lg-3">
-              <div className="menu-item-card shadow p-3 mb-3">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/em-soup-img.png"
-                  className="menu-item-image w-100"
-                />
-                <h1 className="menu-card-title">Soup Recies</h1>
-                <Link to="/category/soup" className="menu-item-link">
-                  View All
-                  <svg width="16px" height="16px" viewBox="0 0 16 16" className="bi bi-arrow-right" fill="#d0b200" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-            <div className="col-12 col-md-6 col-lg-3">
-              <div className="menu-item-card shadow p-3 mb-3">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/em-grilled-seafood-img.png"
-                  className="menu-item-image w-100"
-                />
-                <h1 className="menu-card-title">Fish & Sea food Recipes</h1>
-                <Link to="/category/fish and sea foods" className="menu-item-link">
-                  View All
-                  <svg width="16px" height="16px" viewBox="0 0 16 16" className="bi bi-arrow-right" fill="#d0b200" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-            <div className="col-12 col-md-6 col-lg-3">
-              <div className="menu-item-card shadow p-3 mb-3">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/em-hyderabadi-biryani-img.png"
-                  className="menu-item-image w-100"
-                />
-                <h1 className="menu-card-title">Main Course Recipes</h1>
-                <Link to="/category/main course" className="menu-item-link">
-                  View All
-                  <svg width="16px" height="16px" viewBox="0 0 16 16" className="bi bi-arrow-right" fill="#d0b200" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-            <div className="col-12 col-md-6 col-lg-3">
-              <div className="menu-item-card shadow p-3 mb-3">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/em-mushroom-noodles-img.png"
-                  className="menu-item-image w-100"
-                />
-                <h1 className="menu-card-title">Fast Food Recipes</h1>
-                <Link to="/category/fastfood" className="menu-item-link">
-                  View All
-                  <svg width="16px" height="16px" viewBox="0 0 16 16" className="bi bi-arrow-right" fill="#d0b200" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-            <div className="col-12 col-md-6 col-lg-3">
-              <div className="menu-item-card shadow p-3 mb-3">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/em-gluten-img.png"
-                  className="menu-item-image w-100"
-                />
-                <h1 className="menu-card-title">Tiffin Recipes</h1>
-                <Link to="/category/tiffin" className="menu-item-link">
-                  View All
-                  <svg width="16px" height="16px" viewBox="0 0 16 16" className="bi bi-arrow-right" fill="#d0b200" xmlns="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbKAfs8IyCS2gjcgGL1LCtTlSw9W12_Xsd2g&s">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-            <div className="col-12 col-md-6 col-lg-3">
-              <div className="menu-item-card shadow p-3 mb-3">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/em-coffee-bourbon-img.png"
-                  className="menu-item-image w-100"
-                />
-                <h1 className="menu-card-title">Dessert Recipes</h1>
-                <Link to="/category/breakfast" className="menu-item-link">
-                  View All
-                  <svg width="16px" height="16px" viewBox="0 0 16 16" className="bi bi-arrow-right" fill="#d0b200" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
+      {/* ==================== REGION SELECTOR ==================== */}
+      <RegionSelectorWrapper>
+        <Container>
+          <RegionSelector />
+        </Container>
+      </RegionSelectorWrapper>
+
+      {/* ==================== ALL RECIPES SECTION ==================== */}
+      <ExploreRecipesSection>
+        <Container>
+          <div style={{ marginBottom: '2rem' }}>
+            <MenuSectionHeading>
+              📚 Explore Recipes
+              {loading && <span style={{ color: '#999', fontSize: '0.8em' }}> (Loading...)</span>}
+            </MenuSectionHeading>
+            <p style={{ color: '#999' }}>Total Recipes: <strong>{recipes.length}</strong></p>
+            {error && <div style={{ color: '#721c24', background: '#f8d7da', padding: '1rem', borderRadius: '4px' }}>{error}</div>}
           </div>
-        </div>
-      </div>
-      <div className="healthy-recipe-section pt-5 pb-5">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 col-md-5">
-              <div className="text-center">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/healthy-food-plate-img.png"
-                  className="healthy-food-section-img"
-                />
+
+          {/* Display all recipes in a grid */}
+          {!loading && recipes.length > 0 ? (
+            <RecipeGrid>
+              {recipes.map((recipe) => (
+                <div key={recipe._id}>
+                  <RecipeCard recipe={recipe} />
+                </div>
+              ))}
+            </RecipeGrid>
+          ) : loading ? (
+            <LoadingSpinner>
+              <div className="spinner-border" role="status" style={{ width: '3rem', height: '3rem', margin: '0 auto' }}>
+                <span style={{ visibility: 'hidden' }}>Loading...</span>
               </div>
+              <p style={{ marginTop: '1rem' }}>Loading recipes...</p>
+            </LoadingSpinner>
+          ) : (
+            <div style={{ background: '#d1ecf1', color: '#0c5460', padding: '1rem', borderRadius: '4px', textAlign: 'center' }}>
+              No recipes found. Try different filters!
             </div>
-            <div className="col-12 col-md-7">
-              <h1 className="healthy-recipe-section-heading">
-                Fresh, Healthy, Organic, Delicious Ingredients for Your Recipes
-              </h1>
-              <p className="healthy-recipe-section-description">
+          )}
+        </Container>
+      </ExploreRecipesSection>
+
+      {/* ==================== CATEGORY CARDS SECTION ==================== */}
+      <CategorySection>
+        <Container>
+          <div style={{ marginBottom: '2rem' }}>
+            <MenuSectionHeading>🍽️ Browse by Category</MenuSectionHeading>
+            <p style={{ color: '#999' }}>Find recipes by meal type</p>
+          </div>
+
+          <RecipeGrid>
+            {categories.map((category) => {
+              const recipeCount = recipes.filter(r => r.category === category).length;
+
+              return (
+                <div key={category}>
+                  <Link to={`/category/${category}`} style={{ textDecoration: 'none' }}>
+                    <MenuItemCard>
+                      <CategoryEmoji>
+                        {icons[category] || '🍳'}
+                      </CategoryEmoji>
+                      <MenuCardTitle>
+                        {category}
+                      </MenuCardTitle>
+                      <RecipeCount>
+                        {recipeCount} recipes
+                      </RecipeCount>
+                      <MenuItemLink>
+                        View All
+                        <svg width="16px" height="16px" viewBox="0 0 16 16" fill="#d0b200" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '5px' }}>
+                          <path
+                            fillRule="evenodd"
+                            d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+                          />
+                        </svg>
+                      </MenuItemLink>
+                    </MenuItemCard>
+                  </Link>
+                </div>
+              );
+            })}
+          </RecipeGrid>
+        </Container>
+      </CategorySection>
+
+      {/* ==================== HEALTHY RECIPE SECTION ==================== */}
+      <HealthyRecipeSection>
+        <Container>
+          <Row alignItems="center">
+            <Col>
+              <EmojiLarge>🥗</EmojiLarge>
+            </Col>
+            <Col>
+              <HealthyRecipeSectionHeading>
+                Fresh, Healthy, Organic, Delicious Ingredients
+              </HealthyRecipeSectionHeading>
+              <HealthyRecipeSectionDescription>
                 Say goodbye to harmful chemicals and embrace the goodness of organic produce.
                 Our platform offers a collection of fresh, healthy, and organic fruits and vegetables
                 that bring the authentic flavors of nature to your kitchen. Pamper your body and taste
                 buds with the purest ingredients, perfect for creating delicious and wholesome recipes that nourish
                 both the body and soul. Share, cook, and enjoy the true gifts of Mother Nature with every dish!
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="save-recipe-section pt-5 pb-5">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 d-md-none">
-              <div className="text-center">
-                <img
-                  src="https://www.shutterstock.com/image-photo/caucasian-man-using-laptop-kitchen-260nw-1014561532.jpg "
-                  className="healthy-food-section-img"
-                />
-              </div>
-            </div>
-            <div className="col-12 col-md-7">
-              <h1 className="save-recipe-section-heading">
-                Save Your Favorite Recipes
-              </h1>
-              <p className="save-recipe-section-description">
-                With our platform, you can easily save all the recipes you love! Whether
-                it’s a family favorite or a new discovery, simply bookmark it to create your personal recipe collection.
-                Never lose track of your go-to dishes again, and access them anytime to recreate your culinary masterpieces.
-              </p>
-            </div>
-            <div className="d-none d-md-block col-md-5">
-              <div className="text-center">
-                <img
-                  src="https://www.shutterstock.com/image-photo/caucasian-man-using-laptop-kitchen-260nw-1014561532.jpg "
-                  className="healthy-food-section-img"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="healthy-recipe-section pt-5 pb-5">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 col-md-5">
-              <div className="text-center">
-                <img
-                  src="https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/healthy-food-plate-img.png"
-                  className="healthy-food-section-img"
-                />
-              </div>
-            </div>
-            <div className="col-12 col-md-7">
-              <h1 className="healthy-recipe-section-heading">
-                Share Your Recipes with the World
-              </h1>
-              <p className="healthy-recipe-section-description">
-                Become a part of our vibrant community by sharing your unique recipes with others.
-                From traditional family secrets to innovative dishes,
-                you can inspire fellow food lovers. Spread the joy of cooking by contributing your culinary creations
-                and connect with people who share your passion for food.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="save-recipe-section pt-5 pb-5">
-        <div className="container">
-          <div className="row">
-            <div className="col-12 d-md-none">
-              <div className="text-center">
-                <img
-                  src="https://www.shutterstock.com/image-photo/caucasian-man-using-laptop-kitchen-260nw-1014561532.jpg "
-                  className="healthy-food-section-img"
-                />
-              </div>
-            </div>
-            <div className="col-12 col-md-7">
-              <h1 className="save-recipe-section-heading">
-                Upload Your Recipes and Get Creative
-              </h1>
-              <p className="save-recipe-section-description">
-                Got a delicious recipe that’s waiting to be discovered? Upload it easily and showcase your creativity!
-                Share step-by-step instructions, photos, and tips to help others bring your recipe to life. Our platform
-                is designed to make uploading recipes simple and enjoyable, so you can focus on what you do best—cooking!
-              </p>
-            </div>
-            <div className="d-none d-md-block col-md-5">
-              <div className="text-center">
-                <img
-                  src="https://www.shutterstock.com/image-photo/caucasian-man-using-laptop-kitchen-260nw-1014561532.jpg "
-                  className="healthy-food-section-img"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+              </HealthyRecipeSectionDescription>
+              <Link to="/upload" style={{ display: 'inline-block', marginTop: '1rem', padding: '0.5rem 1rem', background: '#ffc107', color: '#333', borderRadius: '4px', textDecoration: 'none', fontWeight: '500' }}>
+                📤 Share Your Recipe
+              </Link>
+            </Col>
+          </Row>
+        </Container>
+      </HealthyRecipeSection>
+
+      {/* ==================== STATS SECTION ==================== */}
+      <StatsSection>
+        <Container>
+          <Row>
+            <Col style={{ textAlign: 'center' }}>
+              <StatNumber>{recipes?.length || 0}+</StatNumber>
+              <StatLabel>Recipes Available</StatLabel>
+            </Col>
+            <Col style={{ textAlign: 'center' }}>
+              <StatNumber>{categories.length}</StatNumber>
+              <StatLabel>Categories</StatLabel>
+            </Col>
+            <Col style={{ textAlign: 'center' }}>
+              <StatNumber>{Array.isArray(recipes) ? [...new Set(recipes.map(r => r.state))].length : 0}</StatNumber>
+              <StatLabel>States Covered</StatLabel>
+            </Col>
+          </Row>
+        </Container>
+      </StatsSection>
     </div>
   );
 };

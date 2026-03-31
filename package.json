@@ -1,0 +1,19 @@
+{
+  "name": "recipe-finder",
+  "version": "1.0.0",
+  "description": "Recipe finder MERN application",
+  "main": "backend/server.js",
+  "scripts": {
+    "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "backend": "npm run dev --prefix backend",
+    "frontend": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,12 +1,30 @@
 const express = require("express");
-const { registerUser, loginUser } = require("../controllers/authController");
+const {
+  registerUser,
+  loginUser,
+  logout,
+  refreshToken,
+  changePassword,
+} = require("../controllers/authController");
+const { protect } = require("../middleware/authMiddleware");
+const { authLimiter } = require("../middleware/rateLimitMiddleware");
+const { validateUserInput } = require("../middleware/validationMiddleware");
 
 const router = express.Router();
 
-// Route for user registration
-router.post("/register", registerUser);
+// POST /api/auth/register - Register new user
+router.post("/register", authLimiter, validateUserInput, registerUser);
 
-// Route for user login
-router.post("/login", loginUser);
+// POST /api/auth/login - Login user
+router.post("/login", authLimiter, validateUserInput, loginUser);
+
+// POST /api/auth/refresh - Refresh access token
+router.post("/refresh", refreshToken);
+
+// POST /api/auth/logout - Logout user (Protected)
+router.post("/logout", protect, logout);
+
+// POST /api/auth/change-password - Change password (Protected)
+router.post("/change-password", protect, changePassword);
 
 module.exports = router;

@@ -6,7 +6,6 @@ export const RecipeProvider = ({ children }) => {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedState, setSelectedState] = useState(''); // Add this
   const token = localStorage.getItem("token");
 
   // Fetch all recipes
@@ -17,9 +16,15 @@ export const RecipeProvider = ({ children }) => {
         if (!response.ok) throw new Error("Failed to fetch recipes");
 
         const data = await response.json();
-        setRecipes(data);
+
+        // Handle both response formats
+        // Format 1: { success: true, data: [...] }
+        // Format 2: [...]
+        const recipesArray = data.data || (Array.isArray(data) ? data : []);
+        setRecipes(Array.isArray(recipesArray) ? recipesArray : []);
       } catch (err) {
         setError(err.message);
+        setRecipes([]);
       } finally {
         setLoading(false);
       }
@@ -31,14 +36,18 @@ export const RecipeProvider = ({ children }) => {
   const fetchRecipesByState = async (state) => {
     try {
       setRecipes([]); // Clear old recipes before fetching new ones
-      const response = await fetch(`http://localhost:5000/api/recipes/${encodeURIComponent(state)}`);
+      const response = await fetch(
+        `http://localhost:5000/api/recipes/${encodeURIComponent(state)}`,
+      );
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.message || "Failed to fetch recipes");
       }
-  
-      setRecipes(data); // Set new recipes
+
+      // Handle both response formats
+      const recipesArray = data.data || (Array.isArray(data) ? data : []);
+      setRecipes(Array.isArray(recipesArray) ? recipesArray : []);
     } catch (error) {
       console.error("Error fetching recipes:", error.message);
       setRecipes([]); // Ensure no old data is displayed on failure
@@ -57,7 +66,8 @@ export const RecipeProvider = ({ children }) => {
       });
 
       const newRecipe = await response.json();
-      if (!response.ok) throw new Error(newRecipe.message || "Failed to add recipe");
+      if (!response.ok)
+        throw new Error(newRecipe.message || "Failed to add recipe");
 
       setRecipes((prevRecipes) => [newRecipe, ...prevRecipes]);
       return { success: true };
@@ -78,7 +88,9 @@ export const RecipeProvider = ({ children }) => {
 
       if (!response.ok) throw new Error("Failed to delete recipe");
 
-      setRecipes((prevRecipes) => prevRecipes.filter((recipe) => recipe._id !== id));
+      setRecipes((prevRecipes) =>
+        prevRecipes.filter((recipe) => recipe._id !== id),
+      );
       return { success: true };
     } catch (err) {
       return { success: false, message: err.message };
@@ -87,16 +99,20 @@ export const RecipeProvider = ({ children }) => {
   const fetchUserRecipes = async () => {
     try {
       if (!token) return; // Ensure user is logged in
-      const response = await fetch("http://localhost:5000/api/recipes/my-recipes", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        "http://localhost:5000/api/recipes/my-recipes",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to fetch recipes");
+      if (!response.ok)
+        throw new Error(data.error || "Failed to fetch recipes");
       setRecipes(data); // Store recipes in state
     } catch (error) {
       console.error("Error fetching user recipes:", error.message);
@@ -104,7 +120,17 @@ export const RecipeProvider = ({ children }) => {
   };
 
   return (
-    <RecipeContext.Provider value={{ recipes, loading, error, addRecipe, deleteRecipe, fetchRecipesByState, fetchUserRecipes }}>
+    <RecipeContext.Provider
+      value={{
+        recipes,
+        loading,
+        error,
+        addRecipe,
+        deleteRecipe,
+        fetchRecipesByState,
+        fetchUserRecipes,
+      }}
+    >
       {children}
     </RecipeContext.Provider>
   );

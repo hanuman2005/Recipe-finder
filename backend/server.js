@@ -1,60 +1,114 @@
-const express = require("express");
 const dotenv = require("dotenv");
-const cors = require("cors");
-const connectDB = require("./db/connection");
-const Recipe = require("./models/Recipe"); // ✅ Import the Recipe model
-const recipeRoutes = require("./routes/RecipeRoutes");
-const userRoutes = require("./routes/userRoutes");
-const authRoutes = require("./routes/authRoutes");
-const commentRoutes = require("./routes/commentRoutes");
+const app = require("./app");
+const {
+  connectDB,
+  disconnectDB,
+  getConnectionStatus,
+} = require("./db/connection");
+const { initializeQueues } = require("./jobs/initializeQueues");
 
+// ========== LOAD ENVIRONMENT VARIABLES ==========
 dotenv.config();
-connectDB(); // Connect to MongoDB
 
-const app = express();
+// ========== VALIDATE ENVIRONMENT VARIABLES ==========
+const requiredEnvVars = ["MONGO_URI", "JWT_SECRET", "PORT"];
+const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+if (missingEnvVars.length > 0) {
+  console.error(
+    `❌ FATAL ERROR: Missing environment variables: ${missingEnvVars.join(", ")}`,
+  );
+  console.error("Please add them to .env file");
+  process.exit(1);
+}
 
+console.log("✅ Environment variables validated");
 
-// ✅ Search API directly in server.js
-app.get("/api/recipes/search", async (req, res) => {
-  console.log("🔍 Search request received!");
-  try {
-    const { title } = req.query;
-    if (!title) {
-      return res.status(400).json({ message: "❌ Title is required for searching." });
-    }
-
-    console.log("Searching for:", title);
-    const recipes = await Recipe.find({ title: { $regex: title, $options: "i" } });
-
-    if (recipes.length === 0) {
-      return res.status(404).json({ message: "❌ No recipes found." });
-    }
-
-    res.json(recipes);
-  } catch (error) {
-    console.error("❌ Search Error:", error);
-    res.status(500).json({ message: "❌ Server error", error: error.message });
-  }
+// ========== CONNECT TO DATABASE ==========
+console.log("🔌 Connecting to MongoDB...");
+connectDB().catch((err) => {
+  console.error("❌ Database connection failed:", err.message);
+  process.exit(1);
 });
 
-
-
-// Routes
-app.use("/api/recipes", recipeRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/comments", commentRoutes);
-
+// ========== START SERVER ==========
 const PORT = process.env.PORT || 5000;
+const NODE_ENV = process.env.NODE_ENV || "development";
 
-app.get('/', (req, res) => {
-  res.send("Server is running");
+const server = app.listen(PORT, () => {
+  console.log(`
+╔════════════════════════════════════════╗
+║  🚀 RECIPE-FINDER API SERVER           ║
+╚════════════════════════════════════════╝
+📡 Server:      http://localhost:${PORT}
+🌍 Environment: ${NODE_ENV}
+⏰ Started:     ${new Date().toISOString()}
+📚 Database:    Connected ✅
+═════════════════════════════════════════
+  `);
+
+  // Initialize background job queues
+  initializeQueues();
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+// ========== REQUEST TIMEOUT ==========
+server.requestTimeout = 30000; // 30 seconds
+server.headersTimeout = 35000; // 35 seconds
+
+// ========== GRACEFUL SHUTDOWN ==========
+const gracefulShutdown = (signal) => {
+  console.log(`\n\n📛 ${signal} received. Shutting down gracefully...`);
+
+  // Stop accepting new requests
+  server.close(async () => {
+    console.log("✅ HTTP server closed");
+
+    try {
+      // Close database connection
+      await disconnectDB();
+      process.exit(0);
+    } catch (err) {
+      console.error("Error during shutdown:", err);
+      process.exit(1);
+    }
+  });
+
+  // Force shutdown after 10 seconds
+  setTimeout(() => {
+    console.error(
+      "❌ Could not close connections in time, forcefully shutting down",
+    );
+    process.exit(1);
+  }, 10000);
+};
+
+// Handle shutdown signals
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+
+// ========== UNHANDLED ERRORS ==========
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+  // Log but don't exit - allow server to continue
 });
+
+process.on("uncaughtException", (error) => {
+  console.error("❌ Uncaught Exception:", error);
+  // Must exit on uncaught exceptions
+  process.exit(1);
+});
+
+// ========== WARNINGS ==========
+process.on("warning", (warning) => {
+  console.warn("⚠️  Warning:", warning.name, warning.message);
+});
+
+// ========== PERFORMANCE MONITORING ==========
+setInterval(() => {
+  const memUsage = process.memoryUsage();
+  console.log(
+    `[MONITOR] Heap: ${(memUsage.heapUsed / 1024 / 1024).toFixed(2)}MB / ${(memUsage.heapTotal / 1024 / 1024).toFixed(2)}MB | Uptime: ${(process.uptime() / 60).toFixed(2)}min`,
+  );
+}, 60000); // Every 60 seconds
+
+module.exports = server;

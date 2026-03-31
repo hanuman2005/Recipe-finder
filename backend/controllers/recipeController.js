@@ -1,156 +1,189 @@
-const { protect } = require("../middleware/authMiddleware");
-const Recipe = require("../models/Recipe");
+const recipeService = require("../services/recipeService");
+const { queueImageProcessing } = require("../jobs/imageProcessor");
+const { queueSearchIndexUpdate } = require("../jobs/searchIndexProcessor");
+const { queueCleanup } = require("../jobs/cleanupProcessor");
+const {
+  sendError,
+  sendSuccess,
+  sendPaginated,
+} = require("../utils/responseHandler");
 
-const createRecipe = async (req, res) => {
+// ==================== READ ====================
+
+exports.getRecipeById = async (req, res) => {
   try {
-    const { title, description, image, ingredients, steps, category, state, benefits, recommendedHotels } = req.body;
+    const recipe = await recipeService.getRecipeById(
+      req.params.id,
+      req.user?._id,
+    );
+    sendSuccess(res, 200, "Recipe retrieved successfully", recipe);
+  } catch (error) {
+    sendError(res, 404, "RECIPE_NOT_FOUND", error.message, { id: req.params.id });
+  }
+};
 
-    const newRecipe = new Recipe({
-      title,
-      description,
-      image,
-      ingredients,
-      steps,
-      category,
-      state,
-      benefits,
-      recommendedHotels,
-      user: req.user._id // Assuming you store user ID in the token
+exports.getRecipes = async (req, res) => {
+  try {
+    const { category, state, search, page, limit } = req.query;
+    const filters = {
+      ...(category && { category }),
+      ...(state && { state }),
+      ...(search && { search }),
+    };
+    const result = await recipeService.getAllRecipes(filters, page, limit);
+    sendPaginated(res, 200, "Recipes retrieved successfully", result.data, result.pagination);
+  } catch (error) {
+    sendError(res, 500, "RECIPES_FETCH_FAILED", error.message);
+  }
+};
+
+exports.getRecipesByCategory = async (req, res) => {
+  try {
+    const recipes = await recipeService.getRecipesByCategory(
+      req.params.category,
+    );
+    sendSuccess(res, 200, "Recipes retrieved by category", recipes);
+  } catch (error) {
+    const statusCode = error.message.includes("not found") ? 404 : 400;
+    const code = statusCode === 404 ? "NO_RECIPES_FOUND" : "RECIPES_FETCH_FAILED";
+    sendError(res, statusCode, code, error.message, { category: req.params.category });
+  }
+};
+
+exports.getRecipesByState = async (req, res) => {
+  try {
+    const recipes = await recipeService.getRecipesByState(req.params.state);
+    sendSuccess(res, 200, "Recipes retrieved by state", recipes);
+  } catch (error) {
+    const statusCode = error.message.includes("not found") ? 404 : 400;
+    const code = statusCode === 404 ? "NO_RECIPES_FOUND" : "RECIPES_FETCH_FAILED";
+    sendError(res, statusCode, code, error.message, { state: req.params.state });
+  } 
+};
+
+exports.searchRecipes = async (req, res) => {
+  try {
+    if (!req.query.title)
+      return sendError(res, 400, "MISSING_SEARCH_QUERY", "Search query required", { minLength: 1 });
+    const recipes = await recipeService.searchRecipes(req.query.title);
+    sendSuccess(res, 200, "Recipes found", recipes);
+  } catch (error) {
+    sendError(res, 500, "SEARCH_FAILED", error.message, { query: req.query.title });
+  }
+};
+
+exports.getUserRecipes = async (req, res) => {
+  try {
+    const recipes = await recipeService.getUserRecipes(req.user._id);
+    sendSuccess(res, 200, "User recipes retrieved", recipes);
+  } catch (error) {
+    sendError(res, 500, "USER_RECIPES_FETCH_FAILED", error.message, { userId: req.user._id });
+  }
+};
+
+exports.getUserFavoriteRecipes = async (req, res) => {
+  try {
+    const favorites = await recipeService.getUserFavorites(req.user._id);
+    sendSuccess(res, 200, "Favorite recipes retrieved", favorites);
+  } catch (error) {
+    sendError(res, 500, "FAVORITES_FETCH_FAILED", error.message, { userId: req.user._id });
+  }
+};
+
+// ==================== CREATE ====================
+
+exports.createRecipe = async (req, res) => {
+  try {
+    const recipe = await recipeService.createRecipe(req.body, req.user._id);
+
+    // Queue image processing (background job - doesn't block response)
+    if (recipe.image) {
+      queueImageProcessing(recipe._id, recipe.image, "optimize").catch(
+        (err) => {
+          console.error("Failed to queue image processing:", err.message);
+        },
+      );
+    }
+
+    // Queue search index update (background job)
+    queueSearchIndexUpdate("add", recipe._id).catch((err) => {
+      console.error("Failed to queue search index update:", err.message);
     });
 
-    const savedRecipe = await newRecipe.save();
-    res.status(201).json(savedRecipe);
+    sendSuccess(res, 201, "Recipe created successfully", recipe);
   } catch (error) {
-    console.error(error); // Log the error for debugging
-    res.status(500).json({ message: 'Server error' });
-  }
-}
-
-
-
-// Get all recipes
-const getRecipes = async (req, res) => {
-  try {
-    const recipes = await Recipe.find();
-    res.json(recipes);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    sendError(res, 400, "RECIPE_CREATE_FAILED", error.message);
   }
 };
 
-// Get a single recipe by ID
-const getRecipeById = async (req, res) => {
+// ==================== UPDATE ====================
+
+exports.updateRecipe = async (req, res) => {
   try {
-    const recipe = await Recipe.findById(req.params.id);
-    if (!recipe) {
-      return res.status(404).json({ message: "Recipe not found" });
-    }
-    res.json(recipe);
+    const recipe = await recipeService.updateRecipe(
+      req.params.id,
+      req.body,
+      req.user._id,
+    );
+    res
+      .status(200)
+      .json({ success: true, data: recipe, message: "Recipe updated" });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    const status = error.message.includes("Not authorized") ? 403 : 400;
+    res.status(status).json({ success: false, error: error.message });
   }
 };
 
-// Update a recipe
-const updateRecipe = async (req, res) => {
+// ==================== DELETE ====================
+
+exports.deleteRecipe = async (req, res) => {
   try {
-    const recipe = await Recipe.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!recipe) {
-      return res.status(404).json({ message: "Recipe not found" });
-    }
-    res.json(recipe);
+    await recipeService.deleteRecipe(req.params.id, req.user._id);
+
+    // Queue cleanup operations (background job - doesn't block response)
+    queueCleanup("delete-recipe", req.params.id).catch((err) => {
+      console.error("Failed to queue cleanup:", err.message);
+    });
+
+    // Queue search index removal
+    queueSearchIndexUpdate("delete", req.params.id).catch((err) => {
+      console.error("Failed to queue search index update:", err.message);
+    });
+
+    sendSuccess(res, 200, "Recipe deleted successfully");
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    const status = error.message.includes("Not authorized") ? 403 : 400;
+    const code = status === 403 ? "FORBIDDEN_DELETE" : "RECIPE_DELETE_FAILED";
+    sendError(res, status, code, error.message, { id: req.params.id });
   }
 };
 
-// Delete a recipe
-const deleteRecipe = async (req, res) => {
+// ==================== FAVORITES ====================
+
+exports.addToFavorites = async (req, res) => {
   try {
-    const recipe = await Recipe.findByIdAndDelete(req.params.id);
-    if (!recipe) {
-      return res.status(404).json({ message: "Recipe not found" });
-    }
-    res.json({ message: "Recipe deleted successfully" });
+    const favorites = await recipeService.addToFavorites(
+      req.params.id,
+      req.user._id,
+    );
+    sendSuccess(res, 200, "Recipe added to favorites", { favorites });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    const statusCode = error.message.includes("not found") ? 404 : 400;
+    const code = statusCode === 404 ? "RECIPE_NOT_FOUND" : "FAVORITES_UPDATE_FAILED";
+    sendError(res, statusCode, code, error.message, { recipe: req.params.id });
   }
 };
 
-// Get recipes by state
-const getRecipesByState = async (req, res) => {
+exports.removeFromFavorites = async (req, res) => {
   try {
-    const { state } = req.params;
-
-    // Find recipes that match the selected state
-    const recipes = await Recipe.find({ state });
-
-    if (recipes.length === 0) {
-      return res.status(404).json({ message: "No recipes found for this state" });
-    }
-
-    res.json(recipes);
+    const favorites = await recipeService.removeFromFavorites(
+      req.params.id,
+      req.user._id,
+    );
+    sendSuccess(res, 200, "Recipe removed from favorites", { favorites });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    const statusCode = error.message.includes("not found") ? 404 : 400;
+    const code = statusCode === 404 ? "RECIPE_NOT_FOUND" : "FAVORITES_UPDATE_FAILED";
+    sendError(res, statusCode, code, error.message, { recipe: req.params.id });
   }
 };
-
-// Search recipes by title
-const searchRecipes = async (req, res) => {
-  console.log('hello');
-  try {
-    const { title } = req.query;
-    if (!title) {
-      return res.status(400).json({ message: "Title is required for searching." });
-    }
-    console.log("🔍 Searching for recipes with title:", title); // Debugging log
-
-    // Case-insensitive search using regex
-    const recipes = await Recipe.find({ title: { $regex: title, $options: "i" } });
-
-    console.log("✅ Found recipes:", recipes); // Debugging log
-    if (!recipes || recipes.length === 0) {
-      return res.status(404).json({ message: "No recipes found with that title." });
-    }
-    res.json(recipes);
-  } catch (error) {
-    console.error("❌ Search Error:", error); // Logs error to console
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// Toggle Favorite Recipe
-const getUserFavoriteRecipes = async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    // Find all recipes where the user is in the `favoritedBy` array
-    const favoriteRecipes = await Recipe.find({ favoritedBy: userId });
-
-    res.json(favoriteRecipes);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-// user uploaded recipes
-const getUserRecipes = async (req, res) => {
-  try {
-    const recipes = await Recipe.find({ user: req.user.id });
-    res.json(recipes);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
-  }
-};
-
-const getRecipesByCategory = async (req, res) => {
-  try {
-    const { category } = req.params;
-    const recipes = await Recipe.find({ category });
-    res.json(recipes);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-module.exports = { createRecipe, getRecipes, getRecipeById, updateRecipe, deleteRecipe, getRecipesByState, searchRecipes, getUserFavoriteRecipes, protect, getUserRecipes, getRecipesByCategory };

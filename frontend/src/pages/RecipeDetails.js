@@ -18,7 +18,9 @@ const RecipeDetails = () => {
           throw new Error("Recipe not found");
         }
         const data = await response.json();
-        setRecipe(data);
+        // Handle API response structure - could be {data: recipe} or just recipe
+        const recipeData = data.data || data;
+        setRecipe(recipeData);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -38,18 +40,34 @@ const RecipeDetails = () => {
       {/* Recipe Title and Image */}
       <div className="row">
         <div className="col-md-6">
-          <img width={450} height={450} src={recipe.image} alt={recipe.title} className="img-fluid rounded shadow" />
+          <img
+            width={450}
+            height={450}
+            src={
+              recipe.image || "https://via.placeholder.com/450x450?text=Recipe"
+            }
+            alt={recipe.title || "Recipe"}
+            className="img-fluid rounded shadow"
+          />
         </div>
         <div className="col-md-6">
-          <h1 className="text-danger">{recipe.title}</h1>
-          <p className="text-muted">{recipe.description}</p>
+          <h1 className="text-danger">{recipe.title || "Recipe"}</h1>
+          <p className="text-muted">
+            {recipe.description || "No description available"}
+          </p>
 
           {/* Category and State */}
-          <p><strong>Category:</strong> {recipe.category}</p>
-          <p><strong>State:</strong> {recipe.state}</p>
+          <p>
+            <strong>Category:</strong> {recipe.category || "Not specified"}
+          </p>
+          <p>
+            <strong>State:</strong> {recipe.state || "Not specified"}
+          </p>
 
           {/* Benefits */}
-          <p className="fw-bold">Benefits: {recipe.benefits}</p>
+          <p className="fw-bold">
+            Benefits: {recipe.benefits || "Not specified"}
+          </p>
 
           {/* Rating Section */}
           <h4>Rate this Recipe</h4>
@@ -75,9 +93,11 @@ const RecipeDetails = () => {
       <div className="mt-4 p-3 bg-light rounded shadow">
         <h3>Ingredients</h3>
         <ul>
-          {recipe.ingredients.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
+          {recipe.ingredients && Array.isArray(recipe.ingredients) ? (
+            recipe.ingredients.map((item, index) => <li key={index}>{item}</li>)
+          ) : (
+            <li>No ingredients listed</li>
+          )}
         </ul>
       </div>
 
@@ -85,25 +105,34 @@ const RecipeDetails = () => {
       <div className="mt-4 p-3 bg-light rounded shadow">
         <h3>Making Steps</h3>
         <ul>
-          {recipe.steps.map((step, index) => (
-            <li key={index}><strong>Step {index + 1}:</strong> {step}</li>
-          ))}
+          {recipe.steps && Array.isArray(recipe.steps) ? (
+            recipe.steps.map((step, index) => (
+              <li key={index}>
+                <strong>Step {index + 1}:</strong> {step}
+              </li>
+            ))
+          ) : (
+            <li>No steps listed</li>
+          )}
         </ul>
       </div>
 
       {/* Recommended Hotels Section */}
-      {recipe.recommendedHotels && recipe.recommendedHotels.length > 0 && (
-        <div className="mt-4 p-3 bg-light rounded shadow">
-          <h3>Recommended Hotels</h3>
-          <ul>
-            {recipe.recommendedHotels.map((hotel) => (
-              <li key={hotel._id}>
-                <strong>{hotel.name}</strong> - {hotel.location} (⭐ {hotel.rating})
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {recipe.recommendedHotels &&
+        Array.isArray(recipe.recommendedHotels) &&
+        recipe.recommendedHotels.length > 0 && (
+          <div className="mt-4 p-3 bg-light rounded shadow">
+            <h3>Recommended Hotels</h3>
+            <ul>
+              {recipe.recommendedHotels.map((hotel) => (
+                <li key={hotel._id}>
+                  <strong>{hotel.name}</strong> - {hotel.location} (⭐{" "}
+                  {hotel.rating})
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
     </div>
   );
 };

@@ -1,18 +1,68 @@
 const express = require("express");
 const router = express.Router();
-const { createRecipe, getRecipes, getRecipeById, updateRecipe, deleteRecipe, getRecipesByState, searchRecipes, getUserFavoriteRecipes, getUserRecipes, getRecipesByCategory } = require("../controllers/recipeController");
+const {
+  createRecipe,
+  getRecipes,
+  getRecipeById,
+  updateRecipe,
+  deleteRecipe,
+  getRecipesByState,
+  searchRecipes,
+  getUserFavoriteRecipes,
+  getUserRecipes,
+  getRecipesByCategory,
+  addToFavorites,
+  removeFromFavorites,
+} = require("../controllers/recipeController");
 const { protect } = require("../middleware/authMiddleware");
+const {
+  createDeleteLimiter,
+  searchLimiter,
+} = require("../middleware/rateLimitMiddleware");
+const {
+  validateUserInput,
+  validateMongoIdParams,
+} = require("../middleware/validationMiddleware");
 
-// Routes
-router.post("/", protect, createRecipe); // Create a new recipe
+// Specific routes (before wildcard routes)
+router.get("/search", searchLimiter, searchRecipes); // Search recipes by title
+router.get("/favorites", protect, getUserFavoriteRecipes); // Get user's favorite recipes
+router.get("/my-recipes", protect, getUserRecipes); // Get user's own recipes
+router.post(
+  "/:id/favorite",
+  protect,
+  createDeleteLimiter,
+  validateMongoIdParams(["id"]),
+  addToFavorites,
+); // Add to favorites
+router.delete(
+  "/:id/favorite",
+  protect,
+  createDeleteLimiter,
+  validateMongoIdParams(["id"]),
+  removeFromFavorites,
+); // Remove from favorites
+router.get("/category/:category", getRecipesByCategory); // Get recipes by category
+router.get("/state/:state", getRecipesByState); // Get recipes by state
+
+// General CRUD routes
+router.post("/", protect, createDeleteLimiter, validateUserInput, createRecipe); // Create a new recipe
 router.get("/", getRecipes); // Get all recipes
-router.get("/:id", getRecipeById); // Get a recipe by ID
-router.put("/:id", updateRecipe); // Update a recipe
-router.delete("/:id", deleteRecipe); // Delete a recipe
-router.get("/state/:state", getRecipesByState); // get recipes by state
-router.get("/search", searchRecipes); // search recipes based on name
-router.get("/favorites", protect, getUserFavoriteRecipes); // get user's favorite recipes
-router.get("/my-recipes", protect, getUserRecipes);
-router.get('/category/:category', getRecipesByCategory); // Add this route
+router.get("/:id", validateMongoIdParams(["id"]), getRecipeById); // Get a recipe by ID
+router.put(
+  "/:id",
+  protect,
+  createDeleteLimiter,
+  validateUserInput,
+  validateMongoIdParams(["id"]),
+  updateRecipe,
+); // Update a recipe (auth required)
+router.delete(
+  "/:id",
+  protect,
+  createDeleteLimiter,
+  validateMongoIdParams(["id"]),
+  deleteRecipe,
+); // Delete a recipe (auth required)
 
 module.exports = router;

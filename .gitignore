@@ -1,2 +1,75 @@
+# ========== DEPENDENCIES ==========
 /frontend/node_modules
 /backend/node_modules
+npm-debug.log
+npm-debug.log.*
+yarn-error.log
+
+# ========== ENVIRONMENT VARIABLES ==========
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# ========== IDE & EDITOR ==========
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.classpath
+*.sublime-workspace
+
+# ========== BUILD & DIST ==========
+/frontend/build
+/frontend/dist
+/backend/build
+/backend/dist
+.next/
+out/
+
+# ========== LOGS ==========
+logs/
+*.log
+lerna-debug.log
+
+# ========== OS FILES ==========
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ========== TEMPORARY FILES ==========
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# ========== CACHE ==========
+.cache/
+.eslintcache
+.node_repl_history
+*.tsbuildinfo
+
+# ========== UPLOADS & FILES ==========
+/backend/uploads/
+/backend/tmp/
+*.pdf
+*.xlsx
+
+# ========== DOCKER ==========
+.docker/
+docker-compose.override.yml
+
+# ========== TESTING ==========
+coverage/
+.nyc_output/
+dist/

@@ -1,57 +1,133 @@
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const secretKey = "nikhil";
+/**
+ * Auth Controller
+ * Handles HTTP requests for authentication
+ */
 
-// User Registration
-const registerUser = async (req, res) => {
+const authService = require("../services/authService");
+const { queueEmail } = require("../jobs/emailProcessor");
+const { sendError, sendSuccess } = require("../utils/responseHandler");
+
+/**
+ * POST /api/auth/signup
+ */
+exports.registerUser = async (req, res) => {
   try {
-    const { name , email, password } = req.body;
+    const { email, password, name } = req.body;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+    const result = await authService.register(email, password, name);
 
-    const salt = await bcrypt.genSalt(10); // Generate a salt
-    const hashedPassword = await bcrypt.hash(password, salt); // Hash using the salt
-
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
+    // Send refresh token as httpOnly cookie
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    await newUser.save();
-    res.status(201).json({ message: "User registered successfully" });
+    // Queue welcome email (background job - doesn't block response)
+    queueEmail(email, "welcome", { userName: name }).catch((err) => {
+      console.error("Failed to queue welcome email:", err.message);
+    });
+
+    sendSuccess(res, 201, "User registered successfully", {
+      user: result.user,
+      accessToken: result.accessToken,
+    });
   } catch (error) {
-    console.error(error); // <-- This will print the real error in the terminal
-    res.status(500).json({ message: error.message }); // <-- Send real error message
+    sendError(res, 400, "REGISTRATION_FAILED", error.message, { email });
   }
 };
 
-// login
-const loginUser = async (req, res) => {
+/**
+ * POST /api/auth/login
+ */
+exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    const result = await authService.login(email, password);
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    // Send refresh token as httpOnly cookie
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
 
-    const token = jwt.sign({ id: user._id }, secretKey, { expiresIn: "1h" });
-
-    res.json({ authtoken: token, user: { id: user._id, name: user.name, email: user.email } });
+    sendSuccess(res, 200, "Login successful", {
+      user: result.user,
+      accessToken: result.accessToken,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    sendError(res, 401, "LOGIN_FAILED", error.message, { email });
   }
 };
 
-module.exports = { registerUser, loginUser };
+/**
+ * POST /api/auth/logout
+ * Protected route
+ */
+exports.logout = async (req, res) => {
+  try {
+    // Clear refresh token cookie
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
 
+    // Clear access token from client side (client responsibility)
+    sendSuccess(res, 200, "Logout successful");
+  } catch (error) {
+    sendError(res, 400, "LOGOUT_FAILED", error.message);
+  }
+};
+
+/**
+ * POST /api/auth/refresh
+ * Refresh access token using refresh token
+ */
+exports.refreshToken = async (req, res) => {
+  try {
+    // Get refresh token from httpOnly cookie
+    const { refreshToken } = req.cookies;
+
+    const tokens = await authService.refreshAccessToken(refreshToken);
+
+    // Update refresh token cookie
+    res.cookie("refreshToken", tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    sendSuccess(res, 200, "Token refreshed successfully", {
+      accessToken: tokens.accessToken,
+    });
+  } catch (error) {
+    sendError(res, 401, "TOKEN_REFRESH_FAILED", error.message);
+  }
+};
+
+/**
+ * POST /api/auth/change-password
+ * Protected route
+ */
+exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { oldPassword, newPassword } = req.body;
+
+    const result = await authService.changePassword(
+      userId,
+      oldPassword,
+      newPassword,
+    );
+
+    sendSuccess(res, 200, result.message);
+  } catch (error) {
+    sendError(res, 400, "PASSWORD_CHANGE_FAILED", error.message);
+  }
+};
