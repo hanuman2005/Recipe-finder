@@ -1,354 +1,247 @@
 import React, { useContext } from "react";
-import styled from "styled-components";
-import RecipeCard from "../components/RecipeCard";
-import RegionSelector from "../components/RegionSelector";
-import { Link } from "react-router-dom";
 import { RecipeContext } from "../context/RecipeContext";
-
-const BannerSection = styled.div`
-  background-image: url("https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/foodmunch-banner-bg.png");
-  height: 100vh;
-  background-size: cover;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  text-align: center;
-`;
-
-const BannerHeading = styled.h1`
-  color: white;
-  font-family: "Roboto";
-  font-size: 45px;
-  font-weight: 300;
-  margin-bottom: 1rem;
-`;
-
-const BannerCaption = styled.p`
-  color: #f5f7fa;
-  font-family: "Roboto";
-  font-size: 24px;
-  font-weight: 300;
-  margin-bottom: 1rem;
-`;
-
-const RegionSelectorWrapper = styled.div`
-  padding: 2rem 0;
-  background: #f8f9fa;
-`;
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-`;
-
-const ExploreRecipesSection = styled.div`
-  padding: 3rem 0;
-  background-color: white;
-`;
-
-const MenuSectionHeading = styled.h1`
-  color: #183b56;
-  font-family: "Roboto";
-  font-size: 28px;
-  font-weight: 700;
-`;
-
-const MenuItemCard = styled.div`
-  padding: 2rem;
-  border-radius: 8px;
-  text-align: center;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const CategoryEmoji = styled.div`
-  font-size: 3rem;
-  margin-bottom: 10px;
-`;
-
-const MenuCardTitle = styled.h1`
-  color: #333;
-  font-family: "Roboto";
-  font-size: 18px;
-  font-weight: 500;
-  margin: 0;
-`;
-
-const RecipeCount = styled.p`
-  color: #666;
-  margin-bottom: 10px;
-  font-size: 0.95rem;
-`;
-
-const MenuItemLink = styled.div`
-  color: #d0b200;
-  font-family: "Roboto";
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const CategorySection = styled.div`
-  background: #f8f9fa;
-  padding: 3rem 0;
-`;
-
-const HealthyRecipeSection = styled.div`
-  background-color: #f9fbfe;
-  padding: 3rem 0;
-`;
-
-const EmojiLarge = styled.div`
-  font-size: 5rem;
-  margin-bottom: 20px;
-  text-align: center;
-`;
-
-const HealthyRecipeSectionHeading = styled.h1`
-  color: #183b56;
-  font-family: "Roboto";
-  font-size: 28px;
-  font-weight: 700;
-`;
-
-const HealthyRecipeSectionDescription = styled.p`
-  color: #5a7184;
-  font-family: "Roboto";
-  font-size: 16px;
-  line-height: 1.6;
-`;
-
-const StatsSection = styled.div`
-  background: #fff3cd;
-  border-top: 3px solid #ffc107;
-  border-bottom: 3px solid #ffc107;
-  padding: 3rem 0;
-`;
-
-const StatNumber = styled.h2`
-  color: #d48806;
-  font-size: 2rem;
-  margin-bottom: 10px;
-`;
-
-const StatLabel = styled.p`
-  font-size: 1.1rem;
-  color: #666;
-  margin-bottom: 0;
-`;
-
-const Row = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  align-items: ${props => props.alignItems || 'stretch'};
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const Col = styled.div`
-  @media (max-width: 768px) {
-    margin-bottom: 1rem;
-  }
-`;
-
-const RecipeGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
-`;
-
-const LoadingSpinner = styled.div`
-  text-align: center;
-  padding: 3rem 0;
-
-  .spinner-border {
-    border: 0.25em solid rgba(0, 0, 0, 0.1);
-    border-right-color: #ffc107;
-    animation: spinner-border 0.75s linear infinite;
-  }
-
-  @keyframes spinner-border {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import RecipeCard from "../components/recipe/RecipeCard";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import { ChefHat, Clock, BookOpen, Users } from "lucide-react";
 
 const Home = () => {
   const { recipes = [], loading, error } = useContext(RecipeContext);
 
-  // Get all categories from recipes - with safety check
-  const categories = recipes && Array.isArray(recipes) 
-    ? [...new Set(recipes.map(r => r.category))] 
-    : [];
+  const categories = [
+    { name: "Indian", emoji: "🇮🇳", count: 245 },
+    { name: "Italian", emoji: "🇮🇹", count: 156 },
+    { name: "Mexican", emoji: "🌮", count: 124 },
+    { name: "Asian", emoji: "🥢", count: 198 },
+  ];
 
-  const icons = {
-    'Breakfast': '🌅',
-    'Lunch': '🍱',
-    'Dinner': '🌙',
-    'Dessert': '🍰',
-    'Snacks': '🥨',
-    'Non-Vegetarian': '🍗'
-  };
+  const stats = [
+    { icon: ChefHat, label: "Recipes", value: "5000+" },
+    { icon: Users, label: "Users", value: "10K+" },
+    { icon: BookOpen, label: "Cuisines", value: "50+" },
+    { icon: Clock, label: "Saved", value: "25K+" },
+  ];
 
   return (
-    <div>
-      {/* ==================== BANNER SECTION ==================== */}
-      <BannerSection>
-        <div>
-          <BannerHeading>🍳 Get Delicious Food Recipes Anytime</BannerHeading>
-          <BannerCaption>Eat Smart & Healthy</BannerCaption>
-        </div>
-      </BannerSection>
+    <div className="min-h-screen bg-gradient-to-b from-white to-neutral-50">
+      {/* ========== HERO SECTION ========== */}
+      <div
+        className="relative h-screen bg-cover bg-center flex items-center justify-center text-center overflow-hidden"
+        style={{
+          backgroundImage:
+            "url('https://d1tgh8fmlzexmh.cloudfront.net/ccbp-responsive-website/foodmunch-banner-bg.png')",
+        }}
+      >
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/30"></div>
 
-      {/* ==================== REGION SELECTOR ==================== */}
-      <RegionSelectorWrapper>
-        <Container>
-          <RegionSelector />
-        </Container>
-      </RegionSelectorWrapper>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="relative max-w-4xl mx-auto px-4 z-10"
+        >
+          <h1 className="text-6xl md:text-7xl font-bold text-white mb-4 font-display">
+            Spice Scoop
+          </h1>
+          <p className="text-2xl md:text-3xl text-gray-100 mb-8 font-light">
+            Discover Authentic Recipes from Around the World
+          </p>
+          <p className="text-lg text-gray-200 mb-8 max-w-2xl mx-auto">
+            Share, explore, and master culinary traditions from every corner of
+            India
+          </p>
 
-      {/* ==================== ALL RECIPES SECTION ==================== */}
-      <ExploreRecipesSection>
-        <Container>
-          <div style={{ marginBottom: '2rem' }}>
-            <MenuSectionHeading>
-              📚 Explore Recipes
-              {loading && <span style={{ color: '#999', fontSize: '0.8em' }}> (Loading...)</span>}
-            </MenuSectionHeading>
-            <p style={{ color: '#999' }}>Total Recipes: <strong>{recipes.length}</strong></p>
-            {error && <div style={{ color: '#721c24', background: '#f8d7da', padding: '1rem', borderRadius: '4px' }}>{error}</div>}
+          <div className="flex gap-4 justify-center flex-wrap flex-col sm:flex-row">
+            <Link
+              to="/search"
+              className="px-8 py-3 bg-primary-500 text-white rounded-lg font-semibold hover:bg-primary-600 transition transform hover:scale-105"
+            >
+              🔍 Explore Recipes
+            </Link>
+            <Link
+              to="/upload"
+              className="px-8 py-3 bg-white/20 text-white rounded-lg font-semibold border-2 border-white hover:bg-white/30 transition"
+            >
+              📝 Share Your Recipe
+            </Link>
           </div>
+        </motion.div>
+      </div>
 
-          {/* Display all recipes in a grid */}
-          {!loading && recipes.length > 0 ? (
-            <RecipeGrid>
-              {recipes.map((recipe) => (
-                <div key={recipe._id}>
-                  <RecipeCard recipe={recipe} />
-                </div>
-              ))}
-            </RecipeGrid>
-          ) : loading ? (
-            <LoadingSpinner>
-              <div className="spinner-border" role="status" style={{ width: '3rem', height: '3rem', margin: '0 auto' }}>
-                <span style={{ visibility: 'hidden' }}>Loading...</span>
-              </div>
-              <p style={{ marginTop: '1rem' }}>Loading recipes...</p>
-            </LoadingSpinner>
-          ) : (
-            <div style={{ background: '#d1ecf1', color: '#0c5460', padding: '1rem', borderRadius: '4px', textAlign: 'center' }}>
-              No recipes found. Try different filters!
-            </div>
-          )}
-        </Container>
-      </ExploreRecipesSection>
-
-      {/* ==================== CATEGORY CARDS SECTION ==================== */}
-      <CategorySection>
-        <Container>
-          <div style={{ marginBottom: '2rem' }}>
-            <MenuSectionHeading>🍽️ Browse by Category</MenuSectionHeading>
-            <p style={{ color: '#999' }}>Find recipes by meal type</p>
-          </div>
-
-          <RecipeGrid>
-            {categories.map((category) => {
-              const recipeCount = recipes.filter(r => r.category === category).length;
-
+      {/* ========== STATISTICS SECTION ========== */}
+      <section className="py-16 bg-primary-500 text-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, idx) => {
+              const Icon = stat.icon;
               return (
-                <div key={category}>
-                  <Link to={`/category/${category}`} style={{ textDecoration: 'none' }}>
-                    <MenuItemCard>
-                      <CategoryEmoji>
-                        {icons[category] || '🍳'}
-                      </CategoryEmoji>
-                      <MenuCardTitle>
-                        {category}
-                      </MenuCardTitle>
-                      <RecipeCount>
-                        {recipeCount} recipes
-                      </RecipeCount>
-                      <MenuItemLink>
-                        View All
-                        <svg width="16px" height="16px" viewBox="0 0 16 16" fill="#d0b200" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '5px' }}>
-                          <path
-                            fillRule="evenodd"
-                            d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
-                          />
-                        </svg>
-                      </MenuItemLink>
-                    </MenuItemCard>
-                  </Link>
-                </div>
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="text-center"
+                >
+                  <Icon size={40} className="mx-auto mb-3 text-secondary-500" />
+                  <h3 className="text-3xl font-bold">{stat.value}</h3>
+                  <p className="text-gray-100">{stat.label}</p>
+                </motion.div>
               );
             })}
-          </RecipeGrid>
-        </Container>
-      </CategorySection>
+          </div>
+        </div>
+      </section>
 
-      {/* ==================== HEALTHY RECIPE SECTION ==================== */}
-      <HealthyRecipeSection>
-        <Container>
-          <Row alignItems="center">
-            <Col>
-              <EmojiLarge>🥗</EmojiLarge>
-            </Col>
-            <Col>
-              <HealthyRecipeSectionHeading>
-                Fresh, Healthy, Organic, Delicious Ingredients
-              </HealthyRecipeSectionHeading>
-              <HealthyRecipeSectionDescription>
-                Say goodbye to harmful chemicals and embrace the goodness of organic produce.
-                Our platform offers a collection of fresh, healthy, and organic fruits and vegetables
-                that bring the authentic flavors of nature to your kitchen. Pamper your body and taste
-                buds with the purest ingredients, perfect for creating delicious and wholesome recipes that nourish
-                both the body and soul. Share, cook, and enjoy the true gifts of Mother Nature with every dish!
-              </HealthyRecipeSectionDescription>
-              <Link to="/upload" style={{ display: 'inline-block', marginTop: '1rem', padding: '0.5rem 1rem', background: '#ffc107', color: '#333', borderRadius: '4px', textDecoration: 'none', fontWeight: '500' }}>
-                📤 Share Your Recipe
+      {/* ========== CATEGORIES SECTION ========== */}
+      <section className="py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-4">
+              🌍 Popular Categories
+            </h2>
+            <p className="text-lg text-neutral-600">
+              Explore recipes from different cuisines around the world
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {categories.map((cat, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ y: -8, scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to={`/category/${cat.name}`}>
+                  <div className="card p-8 text-center cursor-pointer">
+                    <div className="text-6xl mb-3">{cat.emoji}</div>
+                    <h3 className="text-xl font-bold text-neutral-900 mb-1">
+                      {cat.name}
+                    </h3>
+                    <p className="text-sm text-neutral-600">
+                      {cat.count} recipes
+                    </p>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========== FEATURED RECIPES SECTION ========== */}
+      <section className="py-20 px-4 bg-neutral-50">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-4">
+              🍴 Featured Recipes
+            </h2>
+            <p className="text-lg text-neutral-600">
+              Check out our latest and most popular recipes
+            </p>
+          </motion.div>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array(6)
+                .fill(0)
+                .map((_, i) => (
+                  <div key={i} className="card h-80">
+                    <LoadingSkeleton count={1} type="card" />
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 text-red-700 p-6 rounded-lg text-center">
+              <p className="text-lg font-semibold">⚠️ Error loading recipes</p>
+              <p>{error}</p>
+            </div>
+          )}
+
+          {/* Recipes Grid */}
+          {!loading && !error && recipes.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recipes.slice(0, 6).map((recipe, idx) => (
+                <motion.div
+                  key={recipe._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                >
+                  <RecipeCard recipe={recipe} />
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && !error && recipes.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-2xl text-neutral-600 mb-4">
+                📭 No recipes found
+              </p>
+              <Link
+                to="/upload"
+                className="inline-block px-6 py-2 bg-primary-500 text-white rounded-lg font-semibold hover:bg-primary-600 transition"
+              >
+                Be the first to share! 🍳
               </Link>
-            </Col>
-          </Row>
-        </Container>
-      </HealthyRecipeSection>
+            </div>
+          )}
 
-      {/* ==================== STATS SECTION ==================== */}
-      <StatsSection>
-        <Container>
-          <Row>
-            <Col style={{ textAlign: 'center' }}>
-              <StatNumber>{recipes?.length || 0}+</StatNumber>
-              <StatLabel>Recipes Available</StatLabel>
-            </Col>
-            <Col style={{ textAlign: 'center' }}>
-              <StatNumber>{categories.length}</StatNumber>
-              <StatLabel>Categories</StatLabel>
-            </Col>
-            <Col style={{ textAlign: 'center' }}>
-              <StatNumber>{Array.isArray(recipes) ? [...new Set(recipes.map(r => r.state))].length : 0}</StatNumber>
-              <StatLabel>States Covered</StatLabel>
-            </Col>
-          </Row>
-        </Container>
-      </StatsSection>
+          {/* View All Button */}
+          {recipes.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              className="text-center mt-12"
+            >
+              <Link
+                to="/search"
+                className="inline-block px-8 py-3 bg-primary-500 text-white rounded-lg font-semibold hover:bg-primary-600 transition transform hover:scale-105"
+              >
+                View All Recipes →
+              </Link>
+            </motion.div>
+          )}
+        </div>
+      </section>
+
+      {/* ========== CTA SECTION ========== */}
+      <section className="py-20 px-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          className="max-w-4xl mx-auto text-center"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Ready to Share Your Culinary Masterpiece?
+          </h2>
+          <p className="text-lg mb-8 text-white/90">
+            Join thousands of food enthusiasts and share your favorite recipes
+            with the world
+          </p>
+          <Link
+            to="/upload"
+            className="inline-block px-8 py-4 bg-white text-primary-600 rounded-lg font-bold hover:bg-gray-100 transition transform hover:scale-105"
+          >
+            Upload Your Recipe Now 🚀
+          </Link>
+        </motion.div>
+      </section>
     </div>
   );
 };

@@ -1,0 +1,151 @@
+\documentclass[9pt,a4paper]{article}
+\usepackage[a4paper,margin=0.25in]{geometry}
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*,nosep,after=\vspace{-1pt}}
+\renewcommand{\baselinestretch}{0.95}
+\usepackage{titlesec}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{hyperref}
+\usepackage[most]{tcolorbox}
+\hypersetup{colorlinks=true,urlcolor=blue}
+
+\titleformat{\section}{\Large\bfseries}{}{0em}{}
+\titlespacing*{\section}{0pt}{0ex}{-0.4ex}
+
+\begin{document}
+
+%==================== HEADER ====================%
+\begin{center}
+    {\LARGE \textbf{Hanumantha Rao Madineni}} \\
+    \href{mailto:madenenihanumanturao@gmail.com}{madenenihanumanturao@gmail.com} ~|~
+    +91 93928 52185 ~|~
+    \href{https://www.linkedin.com/in/madeneni}{linkedin.com/in/madeneni} ~|~
+    \href{https://hanuman-portfolio.vercel.app}{hanuman-portfolio.vercel.app} \\
+    Bhimavaram, India
+\end{center}
+
+
+%==================== EDUCATION ====================%
+\begin{tcolorbox}[enhanced,sharp corners,colback=white,boxrule=0pt,frame hidden,
+borderline south={0.5pt}{0pt}{black!50}]
+\textbf{Education} \\[0.4ex]
+\textbf{B.Tech – Computer Science Engineering} \\
+SRKR Engineering College \textbullet~ Bhimavaram \hfill 08/2023 -- \textbf{Expected 08/2027} \\
+CGPA: \textbf{9.52} \\[0.3ex]
+
+\textbf{Full Stack Development Program} \\
+NxtWave CCBP 4.0 Academy \textbullet~ Online \hfill 2023 -- Present
+\end{tcolorbox}
+
+%==================== SUMMARY ====================%
+\begin{tcolorbox}[enhanced,sharp corners,colback=white,boxrule=0pt,frame hidden,
+borderline south={0.5pt}{0pt}{black!50}]
+\textbf{About Me} \\[0.5ex]
+Full Stack MERN Developer with expertise in building scalable web applications and AI-powered products. 
+Strong experience with \textbf{React.js}, \textbf{Node.js}, \textbf{Express.js}, and \textbf{MongoDB} for end-to-end development.
+Experienced in integrating LLM APIs (Claude, Gemini) for production features. 
+Proven track record: hackathon winner (3rd place with 100+ teams), database optimization (100x query speedup), background job processing with Bull Queue + Redis.
+Actively seeking roles to build scalable backend systems and ship features end-to-end.
+\end{tcolorbox}
+
+%==================== TECHNICAL SKILLS ====================%
+\begin{tcolorbox}[enhanced,sharp corners,colback=white,boxrule=0pt,frame hidden,
+borderline south={0.5pt}{0pt}{black!50}]
+\textbf{Technical Skills}
+
+\small
+\textbf{Languages:} JavaScript (ES6+), Python \\
+\textbf{Frontend:} React.js, React Hooks, Context API, Redux, Tailwind CSS, Material-UI, Responsive Design \\
+\textbf{Backend:} Node.js, Express.js, RESTful APIs, Socket.io, Bull Queue (background jobs) \\
+\textbf{Databases:} MongoDB + Mongoose, Redis, MySQL, Database Indexing (14+ indexes), Query Optimization \\
+\textbf{AI/LLM Integration:} Claude API, Gemini API, OpenAI API, zero-shot classification \\
+\textbf{DevOps:} Docker, Docker-Compose, GitHub Actions, Vercel, Render, Railway \\
+\textbf{Security:} JWT + Refresh Tokens, httpOnly Cookies, Zod Validation, XSS Prevention, Rate Limiting \\
+\textbf{Tools:} Git, GitHub, npm, VS Code, Postman, MongoDB Atlas
+\end{tcolorbox}
+
+\end{tcolorbox}
+
+%==================== EXPERIENCE ====================%
+\begin{tcolorbox}[enhanced,sharp corners,colback=white,boxrule=0pt,frame hidden,
+borderline south={0.5pt}{0pt}{black!50}]
+\textbf{Experience}
+\vspace{-0.4ex}
+
+\textbf{MERN Stack Developer – Recipe Finder (Hackathon)} \hfill Oct 2025 \\
+Led full-stack development of AI-powered recipe discovery platform using MERN stack with Claude API integration.
+Optimized MongoDB queries with compound indexing, achieving \textbf{100x query speedup}. Designed Bull Queue-based background job system for async processing.
+Secured \textbf{3rd place among 100+ teams} for architecture quality and feature completeness. \\
+GitHub: \href{https://github.com/hanuman2005/recipe-finder}{github.com/hanuman2005/recipe-finder}
+\end{tcolorbox}
+
+%==================== PROJECTS ====================%
+\begin{tcolorbox}[enhanced,sharp corners,colback=white,boxrule=0pt,frame hidden,
+borderline south={0.9pt}{0pt}{black!50}]
+\textbf{Projects}
+\vspace{-0.3ex}
+
+\textbf{1. 🍳 Recipe-Finder – AI-Powered Culinary Assistant (Hackathon Winner – 3rd Place)} \hfill
+\href{https://recipe-finder-live.vercel.app}{Live} | 
+\href{https://github.com/hanuman2005/recipe-finder}{GitHub}
+\begin{itemize}[topsep=1pt]
+  \item Built full-stack ingredient-based recipe discovery with \textbf{Claude API} for AI-powered ingredient substitutions (zero-shot classification).
+  \item Implemented smart filters: cuisine, diet types (vegan, keto, gluten-free), equipment (induction, microwave, no-cook) using compound \textbf{MongoDB indexes}.
+  \item Designed \textbf{Bull Queue + Redis} background job system: email notifications, image optimization, search indexing (4 async processors with custom retry strategies).
+  \item Optimized database queries with 14 strategic indexes, reducing query time from 2–5 seconds to \textbf{<50ms (100x speedup)}.
+  \item Implemented real-time comments + ratings system, user authentication (\textbf{JWT + httpOnly cookies}), and favorites management.
+  \item \textbf{Tech:} React + Tailwind | Node.js + Express | MongoDB + Mongoose | Claude API | Bull Queue | Docker
+\end{itemize} \vspace{0.3ex}
+
+\textbf{2. ⚖️ Dark-Contract – Legal Clause \& Dark-Pattern Auditor} \hfill
+\href{https://dark-contract.vercel.app}{Live} | 
+\href{https://github.com/hanuman2005/dark-contract}{GitHub}
+\begin{itemize}[topsep=1pt]
+  \item Built AI-powered legal auditor using \textbf{Claude API zero-shot classification} to analyze T\&C text for predatory clauses in <5 seconds.
+  \item Privacy Scorecard: Grades Indian apps (Zomato, Swiggy, Meesho, BYJU's) from A+ to F based on data transparency — fully shareable on social media.
+  \item Visual alert dashboard converts dense legal language into intuitive icons: data tracking, hidden costs, auto-renewal traps, mandatory arbitration.
+  \item Indian app database: 100+ T\&C scores with public browsing (no upload required) — fills gap left by Western-only ToS;DR tool.
+  \item Integrated PDF parsing (\textbf{pdfplumber}) + web scraping (\textbf{Puppeteer}) for T\&C retrieval and Claude analysis.
+  \item Consumer compliance: Ensures adherence to IT Act 2000 and Consumer Protection Act 2019 — enables true informed consent.
+  \item \textbf{Tech:} React + Tailwind | Node.js + Express | MongoDB | Claude API | Puppeteer | Python (pdfplumber) | Render + Vercel
+\end{itemize} \vspace{0.3ex}
+
+\textbf{3. 🤝 Group Decision Resolver – Collaborative Decision-Making Platform} \hfill
+\href{https://group-decision-resolver.vercel.app}{Live} | 
+\href{https://github.com/hanuman2005/group-decision-resolver}{GitHub}
+\begin{itemize}[topsep=1pt]
+  \item Full-stack MERN application for real-time collaborative group decision making using \textbf{Socket.io} WebSocket synchronization.
+  \item Implemented multiple decision models: majority vote, Borda count (ranked voting), Condorcet analysis for sophisticated group choices.
+  \item Time-boxed poll system with auto-close, spam prevention via \textbf{JWT authentication}, and concurrent user testing (50+ users).
+  \item Interactive results dashboard with live D3.js charts, decision history, and PDF report export capability.
+  \item \textbf{Tech:} React + D3.js | Node.js + Socket.io | MongoDB | JWT authentication
+\end{itemize} \vspace{0.3ex}
+
+\textbf{4. 🎓 AI Wiki Quiz Generator – Automated Assessment Platform (Internship Assignment)} \hfill
+\href{https://ai-wiki-quiz.vercel.app}{Live} | 
+\href{https://github.com/hanuman2005/ai-wiki-quiz}{GitHub}
+\begin{itemize}[topsep=1pt]
+  \item Full-stack application converting Wikipedia articles into AI-generated interactive quizzes using \textbf{Gemini API} and \textbf{LangChain}.
+  \item Backend: Designed \textbf{FastAPI} REST APIs with Wikipedia scraping, quiz generation, and storage in \textbf{MongoDB}.
+  \item Frontend: React SPA with interactive quiz mode, real-time scoring, attempt history, and retry functionality with responsive design.
+  \item Difficulty levels: Easy (factual recall) → Hard (synthesis questions) with dynamic question generation.
+  \item Deployed end-to-end: frontend on \textbf{Vercel}, backend on \textbf{Railway}, with error handling and validation.
+  \item \textbf{Tech:} FastAPI (Python) | React.js | Gemini API via LangChain | Beautiful Soup (web scraping) | MongoDB
+\end{itemize}
+
+\end{tcolorbox}
+
+%==================== AWARDS ====================%
+\begin{tcolorbox}[enhanced,sharp corners,colback=white,boxrule=0pt,frame hidden,
+borderline south={0.5pt}{0pt}{black!50}]
+\textbf{Awards \& Recognition} \\[0.5ex]
+\textbf{3rd Place – Recipe-Finder Hackathon 2025} \\
+Built full-stack MERN app with AI integration and database optimization. Beat 100+ teams. \\[0.25ex]
+\textbf{3rd Place – DevOps Flowthon 2025} \\
+Secured 3rd place among 100+ teams for end-to-end DevOps workflow. Won ₹8000. \\[0.25ex]
+\textbf{5th Place – Amaravati Quantum Valley Hackathon 2025} \\
+Team "The Matrix Minds" placed 5th in the Quantum Path Planning challenge.
+\end{tcolorbox}
+
+\end{document}

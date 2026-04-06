@@ -72,12 +72,15 @@ const RecipeCard = ({ recipe }) => {
             {recipe.description?.substring(0, 60)}...
           </p>
 
+          {/* Category & State Badges */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               marginTop: "10px",
+              gap: "5px",
+              flexWrap: "wrap",
             }}
           >
             <span
@@ -91,8 +94,44 @@ const RecipeCard = ({ recipe }) => {
             </span>
           </div>
 
+          {/* POWER FEATURE #3: Equipment Badges */}
+          {/* Shows available kitchen equipment for this recipe - helps users find recipes for their kitchen */}
+          {recipe.equipment && recipe.equipment.length > 0 && (
+            <div
+              style={{
+                marginTop: "8px",
+                display: "flex",
+                gap: "5px",
+                flexWrap: "wrap",
+              }}
+            >
+              {recipe.equipment.slice(0, 2).map((equip, idx) => (
+                <span
+                  key={idx}
+                  className="badge bg-warning text-dark"
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    backgroundColor: "#ffc107",
+                  }}
+                  title={`Equipment: ${equip}`}
+                >
+                  ⚙️ {equip.substring(0, 10)}
+                </span>
+              ))}
+              {recipe.equipment.length > 2 && (
+                <span
+                  className="badge bg-secondary"
+                  style={{ fontSize: "0.75rem" }}
+                >
+                  +{recipe.equipment.length - 2} more
+                </span>
+              )}
+            </div>
+          )}
+
           <p style={{ marginTop: "10px", color: "#666", fontSize: "0.85rem" }}>
-            📍 {recipe.state}
+            ⏱️ {recipe.prepTime}min prep | 👨‍🍳 {recipe.servings} servings
           </p>
         </div>
       </div>

@@ -1,6 +1,10 @@
-# 🍳 Recipe-Finder
+# 🍳 Recipe-Finder — AI-Powered Culinary Assistant
 
-> _Turn your leftover ingredients into delicious meals instantly — powered by smart search, intuitive design, and zero waste philosophy._
+> **The only recipe app that understands YOUR kitchen.**
+>
+> AI ingredient swaps • Smart leftover memory • Equipment-aware filtering • Pro cooking hacks.
+>
+> Turn wasted ingredients into delicious meals—instantly.
 
 ---
 
@@ -38,22 +42,26 @@ Our goal:
 These game-changing features will transform Recipe-Finder into an **AI-Powered Cooking Assistant** that goes beyond traditional recipe search. These are the secret sauce that separates world-class projects from basic clones.
 
 ### 1. 🧠 **Dynamic Substitution Engine** (AI-Powered)
+
 **Status:** 🔨 In Development | **Phase:** 1 | **Timeline:** Weeks 1-3
 
 Solves the #1 user frustration: "I don't have this ingredient. What do I do?"
 
 **The Problem:**
+
 - User searches for "Cream Pasta" but only has Milk and Butter
 - Traditional apps say "Recipe not found"
 - User gets frustrated and closes the app
 
 **The Solution:**
+
 - AI-powered substitution engine using Claude API
 - When recipe match < 100%, show "Kitchen Hacks" for missing ingredients
 - Explains the science: "Cream = 1 part butter + 2 parts milk (emulsifies when heated)"
 - Turn "miss" into "hit" and user stays engaged
 
 **MERN Implementation:**
+
 ```
 Frontend Components:
 ├── RecipeDetails.js (enhanced)
@@ -78,6 +86,7 @@ Database:
 ```
 
 **Features:**
+
 - AI-powered ingredient substitution suggestions
 - Ratio-based explanations ("Why this works")
 - Save favorite substitutions
@@ -85,6 +94,7 @@ Database:
 - Works for allergies and diet restrictions
 
 **ENV Variables Needed:**
+
 ```env
 CLAUDE_API_KEY=your_anthropic_api_key
 ```
@@ -92,22 +102,26 @@ CLAUDE_API_KEY=your_anthropic_api_key
 ---
 
 ### 2. 📅 **Leftover Chain-Reaction** (Smart Memory System)
+
 **Status:** 🔨 In Development | **Phase:** 2 | **Timeline:** Weeks 3-5
 
 Solves the "boring leftovers" problem with AI-driven meal planning.
 
 **The Problem:**
+
 - User makes "Boiled Rice" on Monday
 - Tuesday: Same rice is still in the fridge, user ignores it
 - Food waste increases, user gets bored
 
 **The Solution:**
+
 - After recipe completion, ask: "Did you make extra?"
 - If Yes → Auto-add "Cooked Rice" to virtual "Leftover Pantry"
 - 12 hours later → Smart notification: "You have cooked rice! Try Lemon Rice or Fried Rice"
 - User cooks again with the leftover = zero waste + engagement
 
 **MERN Implementation:**
+
 ```
 Frontend Components:
 ├── RecipeCompletion.js (new)
@@ -138,6 +152,7 @@ Database:
 ```
 
 **Features:**
+
 - Smart leftover detection from recipes
 - Auto-generated "Virtual Pantry"
 - Scheduled notifications (Bull Queue + Redis)
@@ -146,6 +161,7 @@ Database:
 - Reduce food waste measurably
 
 **Flow:**
+
 ```
 User completes recipe → Ask "Did you make extra?"
 → Add to LeftoverInventory → Schedule Bull job at +12hrs
@@ -156,38 +172,47 @@ User completes recipe → Ask "Did you make extra?"
 
 ---
 
-### 3. ⚡ **Energy & Utility Constraint Filter**
-**Status:** 🔨 In Development | **Phase:** 3 | **Timeline:** Weeks 5-7
+### 3. ⚙️ **Equipment-Aware Recipe Discovery** ✅
+
+**Status:** ✅ **COMPLETE** | **Phase:** 3 | **Completed:** April 6, 2026
 
 Target market: Students, bachelors, eco-conscious users, those with limited kitchen equipment.
 
+🎉 **JUST SHIPPED:** 16 recipes with equipment badges | Compound index for <50ms queries | Multi-select filter UI | Equipment metadata on all recipe cards
+
+See [FEATURE_3_EQUIPMENT_FILTER_IMPLEMENTATION.md](./FEATURE_3_EQUIPMENT_FILTER_IMPLEMENTATION.md) for full implementation details.
+
 **The Problem:**
+
 - College student has only induction cooktop + microwave
 - Traditional recipe apps assume full kitchen
 - Student can't cook most recipes in the database
 
 **The Solution:**
+
 - Add `equipment` array to Recipe schema
 - Filter by: "Induction Only," "No-Cook," "One-Pot," "Microwave," "Rice Cooker Only"
 - Use **Compound Indexing** for 100x faster queries
 - Show "Equipment Badge" on recipe cards
 
 **Equipment Types (Enum):**
+
 ```javascript
 [
-  "Induction Cooktop",  // High heat, no open flame
-  "Gas Stove",          // Flame-based cooking
-  "Oven",               // Baking/roasting
-  "Microwave",          // Quick heating
-  "Rice Cooker",        // Specific appliance
-  "Pressure Cooker",    // High-pressure cooking
-  "One-Pot Only",       // Minimalist cooking
-  "No Cook Required",   // Ready-to-eat/cold
-  "Stovetop (Any)",     // Flexible cooking
-]
+  "Induction Cooktop", // High heat, no open flame
+  "Gas Stove", // Flame-based cooking
+  "Oven", // Baking/roasting
+  "Microwave", // Quick heating
+  "Rice Cooker", // Specific appliance
+  "Pressure Cooker", // High-pressure cooking
+  "One-Pot Only", // Minimalist cooking
+  "No Cook Required", // Ready-to-eat/cold
+  "Stovetop (Any)", // Flexible cooking
+];
 ```
 
 **MERN Implementation:**
+
 ```
 Frontend Components:
 ├── EquipmentFilter.js (new)
@@ -213,6 +238,7 @@ Database:
 ```
 
 **Features:**
+
 - Multi-select equipment filter
 - Compound indexing for lightning-fast queries
 - Equipment badge on recipe cards
@@ -220,14 +246,17 @@ Database:
 - Budget & eco-friendly discovery
 
 **Sample Query (After Indexing):**
+
 ```javascript
 // Find: Indian recipes with eggs & cheese, induction cooktop, under 30 mins
-db.recipes.find({
-  ingredients: { $all: ["eggs", "cheese"] },
-  equipment: "Induction Cooktop",
-  category: "Indian",
-  prepTime: { $lte: 30 }
-}).explain()
+db.recipes
+  .find({
+    ingredients: { $all: ["eggs", "cheese"] },
+    equipment: "Induction Cooktop",
+    category: "Indian",
+    prepTime: { $lte: 30 },
+  })
+  .explain();
 
 // Index: (ingredients, equipment, prepTime, category)
 // Speed: <50ms (vs 2-5s without indexing)
@@ -235,24 +264,28 @@ db.recipes.find({
 
 ---
 
-### 4. 🎯 **Street-Style Secret Technique Library**
-**Status:** 🔨 In Development | **Phase:** 4 | **Timeline:** Weeks 7-9
+### 4. 🎯 **Street-Style Secret Technique Library** (NEXT)
+
+**Status:** 🔨 In Development | **Phase:** 4 | **Timeline:** Weeks 7-9 | **Priority:** Next after Feature 3 ✅
 
 Teaches cooking as a **skill**, not just a shopping list.
 
 **The Problem:**
+
 - Recipe says: "Deep fry until golden"
 - User fries for 2 minutes → mushy inside, burnt outside
 - Street vendor fries same item for 1 min → crispy outside, tender inside
 - User thinks: "Street food requires magic. I can't do it."
 
 **The Solution:**
+
 - Add "Technique Tips" to regional recipes
 - Highlight pro tips in **distinct UI** (gold/highlight color)
 - Include specific: temperature, timing, science, regional variations
 - Example: "Double-fry at 180°C for 30 seconds each time. First fry sets crust, second fry creates crunch."
 
 **Technique Tip Structure:**
+
 ```javascript
 "techniques": [
   {
@@ -270,6 +303,7 @@ Teaches cooking as a **skill**, not just a shopping list.
 ```
 
 **MERN Implementation:**
+
 ```
 Frontend Components:
 ├── RecipeDetails.js (update)
@@ -298,11 +332,13 @@ Database:
 ```
 
 **UI Highlighting:**
+
 - Regular steps: White background, normal text
 - Technique tips: Gold/yellow background, bold icon (⭐ Pro Tip), larger font
 - Skill level: Badge "Advanced" or "Beginner"
 
 **Example Rendering:**
+
 ```
 Step 4: Add oil and heat to 180°C
 
@@ -316,6 +352,7 @@ Why: Hyderabad street vendors use this exact method
 ```
 
 **Features:**
+
 - Color-coded "Pro Tips" in recipe steps
 - Regional technique library (Hyderabadi, Guntur, Tamil, Bengali, etc.)
 - Skill levels: Beginner ➜ Intermediate ➜ Advanced
@@ -325,42 +362,396 @@ Why: Hyderabad street vendors use this exact method
 
 ---
 
+## � Technical Foundation - Backend
+
+Before implementing the full Power Features, build these 3 critical backend systems:
+
+### ✅ Task 1: MongoDB Schema - Add Ingredient Function Field
+
+**Goal:** Categorize ingredients by their cooking role for better substitution logic.
+
+**Schema Change - Update `models/Recipe.js`:**
+
+```javascript
+// Current Schema:
+const ingredientSchema = {
+  name: String,
+  quantity: String,
+  unit: String,
+};
+
+// NEW Schema:
+const ingredientSchema = {
+  name: String,
+  quantity: String,
+  unit: String,
+  functionType: {
+    // ADD THIS
+    type: String,
+    enum: [
+      "Base", // Flour, rice, pasta
+      "Protein", // Chicken, eggs, tofu
+      "Fat", // Butter, oil, cream
+      "Binder", // Egg white, yogurt
+      "Thickener", // Cornstarch, flour
+      "Flavoring", // Salt, spices, herbs
+      "Liquid", // Water, milk, broth
+      "Acid", // Lemon, vinegar
+      "Sweetener", // Sugar, honey
+      "Texture", // Nuts, breadcrumbs
+    ],
+    required: true,
+  },
+  canBeSubstituted: {
+    // ADD THIS
+    type: Boolean,
+    default: true,
+  },
+  substitutes: [
+    {
+      // ADD THIS
+      name: String,
+      ratio: String, // "1:1", "1:2", etc.
+      explanation: String, // "Why this works"
+    },
+  ],
+};
+
+// Full Recipe Schema Update:
+const RecipeSchema = new mongoose.Schema(
+  {
+    // ... existing fields ...
+    ingredients: [ingredientSchema], // Updated schema
+    // ... existing fields ...
+  },
+  { timestamps: true },
+);
+```
+
+**Example Usage in Seeding:**
+
+```javascript
+// backend/seed.js - Update recipes
+const recipes = [
+  {
+    title: "Cream Pasta",
+    ingredients: [
+      {
+        name: "Cream",
+        quantity: "200",
+        unit: "ml",
+        functionType: "Fat", // ADD THIS
+        canBeSubstituted: true,
+        substitutes: [
+          {
+            name: "Milk + Butter",
+            ratio: "2:1",
+            explanation:
+              "Butter (fat) + milk (liquid) emulsifies to mimic cream texture",
+          },
+          {
+            name: "Greek Yogurt",
+            ratio: "1:1",
+            explanation: "High fat content provides richness",
+          },
+        ],
+      },
+      {
+        name: "Pasta",
+        quantity: "200",
+        unit: "grams",
+        functionType: "Base", // ADD THIS
+        canBeSubstituted: false,
+      },
+    ],
+    // ... other fields ...
+  },
+];
+```
+
+**Status:** 🔨 In Development
+
+---
+
+### ✅ Task 2: Smart Search API - MongoDB Text Search with Weights
+
+**Goal:** Make search prioritize "Main Ingredient" (Chicken) over "Salt" for better relevance.
+
+**Schema Update - Add Text Index to Recipe:**
+
+```javascript
+// models/Recipe.js - Add text index
+
+RecipeSchema.index({
+  title: "text",
+  description: "text",
+  "ingredients.name": "text",
+  category: "text",
+  state: "text",
+});
+
+// Create WEIGHTED text index (IMPORTANT for relevance)
+RecipeSchema.index(
+  {
+    title: "text",
+    description: "text",
+    "ingredients.name": "text",
+    category: "text",
+  },
+  {
+    weights: {
+      title: 10, // Title matches = 10x weight
+      description: 5, // Description = 5x weight
+      "ingredients.name": 3, // Ingredients = 3x weight
+      category: 2, // Category = 2x weight
+    },
+  },
+);
+```
+
+**New Controller Endpoint - `controllers/recipeController.js`:**
+
+```javascript
+exports.smartSearch = async (req, res, next) => {
+  try {
+    const { query, page = 1, limit = 20 } = req.query;
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query required",
+      });
+    }
+
+    // Use MongoDB text search with weights
+    const recipes = await Recipe.find(
+      { $text: { $search: query } }, // Text search
+      { score: { $meta: "textScore" } }, // Get relevance score
+    )
+      .sort({ score: { $meta: "textScore" } }) // Sort by relevance
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    const total = await Recipe.countDocuments({
+      $text: { $search: query },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Found ${recipes.length} recipes matching "${query}"`,
+      data: recipes,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+```
+
+**New Route - `routes/RecipeRoutes.js`:**
+
+```javascript
+router.get("/search", recipeController.smartSearch); // GET /api/recipes/search?query=chicken&page=1
+```
+
+**Example Usage:**
+
+```javascript
+// Frontend example
+const searchRecipes = async (query) => {
+  const response = await fetch(
+    `/api/recipes/search?query=${query}&page=1&limit=20`,
+  );
+  const { data } = await response.json();
+  return data; // Results sorted by relevance (Chicken > Salt)
+};
+```
+
+**Status:** 🔨 In Development
+
+---
+
+### ✅ Task 3: Claude Integration - Substitution Endpoint
+
+**Goal:** Call Claude API to get 1-sentence cooking hacks for ingredient substitutions.
+
+**New Service - `services/substitutionService.js`:**
+
+```javascript
+const Anthropic = require("@anthropic-ai/sdk");
+
+const client = new Anthropic();
+
+exports.getSuggestion = async (ingredient, availableIngredients = []) => {
+  try {
+    const prompt = `You are a professional chef and food scientist. 
+    
+    The user needs to substitute: "${ingredient}"
+    
+    Available alternatives they have: ${availableIngredients.join(", ")}
+    
+    Provide a 1-sentence cooking hack that explains:
+    1. WHAT to use instead
+    2. HOW MUCH (ratio)
+    3. WHY it works (science)
+    
+    Format: "[Substitute Name] (Ratio): [Explanation]"
+    
+    Example: "Butter + milk (2:1): Emulsifies when heated to mimic cream's richness and texture."
+    
+    Respond ONLY with the substitution suggestion, no extra text.`;
+
+    const message = await client.messages.create({
+      model: "claude-3-5-sonnet-20241022", // Use latest Claude model
+      max_tokens: 150,
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    });
+
+    return message.content[0].text; // Return 1-sentence hack
+  } catch (error) {
+    console.error("Claude API Error:", error);
+    throw new Error("Failed to generate substitution suggestion");
+  }
+};
+```
+
+**New Controller - `controllers/substitutionController.js`:**
+
+```javascript
+const substitutionService = require("../services/substitutionService");
+
+exports.suggestSubstitution = async (req, res, next) => {
+  try {
+    const { ingredient, available = [] } = req.query;
+
+    if (!ingredient) {
+      return res.status(400).json({
+        success: false,
+        message: "Ingredient parameter required",
+      });
+    }
+
+    // Call Claude API
+    const suggestion = await substitutionService.getSuggestion(
+      ingredient,
+      available,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Substitution suggestion generated",
+      data: {
+        original: ingredient,
+        suggestion: suggestion,
+        timestamp: new Date(),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+```
+
+**New Route - `routes/substitutionRoutes.js`:**
+
+```javascript
+const express = require("express");
+const router = express.Router();
+const substitutionController = require("../controllers/substitutionController");
+const authMiddleware = require("../middleware/authMiddleware");
+
+// GET /api/substitutions/suggest?ingredient=cream&available=milk,butter
+router.get("/suggest", substitutionController.suggestSubstitution);
+
+module.exports = router;
+```
+
+**Wire into Express App - `app.js`:**
+
+```javascript
+const substitutionRoutes = require("./routes/substitutionRoutes");
+
+app.use("/api/substitutions", substitutionRoutes);
+```
+
+**Frontend Usage:**
+
+```javascript
+const askForSubstitute = async (ingredient) => {
+  const response = await fetch(
+    `/api/substitutions/suggest?ingredient=${ingredient}&available=milk,butter,yogurt`,
+  );
+  const { data } = await response.json();
+  console.log(data.suggestion);
+  // Output: "Milk + butter (2:1): Emulsifies when heated to mimic cream's actual richness."
+};
+```
+
+**Required Installation:**
+
+```bash
+npm install @anthropic-ai/sdk
+```
+
+**Environment Variable:**
+
+```env
+CLAUDE_API_KEY=your_anthropic_api_key_here
+```
+
+**Status:** 🔨 In Development
+
+---
+
 ## 🔄 Implementation Roadmap for Power Features
 
-| # | Power Feature                        | Phase | Timeline | Frontend | Backend | Database | Status      |
-|---|--------------------------------------|-------|----------|----------|---------|----------|-------------|
-| 1 | Dynamic Substitution Engine          | 1     | Wk 1-2   | 🔨       | 🔨      | 🔨       | 🔨 In Dev   |
-| 2 | Claude API Integration               | 1     | Wk 2-3   | ✅       | 🔨      | -        | 🔨 In Dev   |
-| 3 | Leftover Chain-Reaction              | 2     | Wk 3-4   | 🔨       | 🔨      | 🔨       | ⏳ Pending  |
-| 4 | Bull Queue + 12hr Scheduling         | 2     | Wk 4-5   | 🔨       | 🔨      | -        | ⏳ Pending  |
-| 5 | Energy & Utility Filter              | 3     | Wk 5-6   | 🔨       | 🔨      | 🔨       | ⏳ Pending  |
-| 6 | Compound MongoDB Indexes             | 3     | Wk 6-7   | -        | ✅      | 🔨       | ⏳ Pending  |
-| 7 | Street-Style Technique Library       | 4     | Wk 7-8   | 🔨       | 🔨      | 🔨       | ⏳ Pending  |
-| 8 | Technique Highlighting UI            | 4     | Wk 8-9   | 🔨       | -       | -        | ⏳ Pending  |
-| 9 | Testing & QA Optimization            | 5     | Wk 9-10  | 🧪       | 🧪      | 📊       | ⏳ Pending  |
+| Phase | Week  | Task                                       | Focus    | Status     | Depends On           |
+| ----- | ----- | ------------------------------------------ | -------- | ---------- | -------------------- |
+| **0** | **0** | **FOUNDATION TASKS (Must Do First)**       | Backend  | 🔨 **NOW** | N/A                  |
+|       |       | Task 1: Ingredient Function Field          | Schema   | 🔨 In Dev  | N/A                  |
+|       |       | Task 2: Smart Search API (Text + Weights)  | API      | 🔨 In Dev  | N/A                  |
+|       |       | Task 3: Claude Integration Endpoint        | Backend  | 🔨 In Dev  | CLAUDE_API_KEY env   |
+| **1** | 1-2   | Dynamic Substitution Engine                | Full     | ⏳ Pending | Foundation Tasks ✅  |
+| **1** | 2-3   | Frontend: Substitution UI Components       | Frontend | ⏳ Pending | Task 1 + Task 3      |
+| **2** | 3-5   | Leftover Chain-Reaction                    | Full     | ⏳ Pending | Bull Queue + Redis   |
+| **3** | 5-7   | Energy & Utility Filter + Compound Indexes | Full     | ⏳ Pending | Task 1 Schema        |
+| **4** | 7-9   | Street-Style Technique Library             | Full     | ⏳ Pending | Recipe Schema Update |
+| **5** | 9-10  | Testing, QA & Performance Optimization     | Full     | ⏳ Pending | All Features Done    |
 
 **Legend:**
-- 🔨 = In Development (actively coding)
-- ✅ = Completed
+
+- 🔨 = In Development (actively coding RIGHT NOW)
+- ✅ = Completed & Ready
+- ⏳ = Waiting (blocked on dependencies)
 - 🧪 = Testing & QA
 - 📊 = Performance Optimization
-- ⏳ = Pending (waiting to start)
+- 🔴 = NOT STARTED
 
 ---
 
 ## 🧰 Tech Stack
 
-| Layer               | Technology                                  | Purpose                                       |
-| ------------------- | ------------------------------------------- | --------------------------------------------- |
-| **Frontend**        | React.js / HTML / CSS / JavaScript          | Interactive UI for search and recipe display  |
-| **Backend**         | Node.js + Express                           | API handling, recipe management, user auth    |
-| **Database**        | MongoDB + Mongoose                          | Store recipes, users, comments, favorites     |
-| **Authentication**  | JWT + Refresh Tokens + httpOnly Cookies     | Secure user sessions                          |
-| **Background Jobs** | Bull Queue + Redis                          | Email, image processing, search indexing      |
+| Layer               | Technology                                  | Purpose                                          |
+| ------------------- | ------------------------------------------- | ------------------------------------------------ |
+| **Frontend**        | React.js / HTML / CSS / JavaScript          | Interactive UI for search and recipe display     |
+| **Backend**         | Node.js + Express                           | API handling, recipe management, user auth       |
+| **Database**        | MongoDB + Mongoose                          | Store recipes, users, comments, favorites        |
+| **Authentication**  | JWT + Refresh Tokens + httpOnly Cookies     | Secure user sessions                             |
+| **Background Jobs** | Bull Queue + Redis                          | Email, image processing, search indexing         |
 | **AI Integration**  | Claude API (Anthropic)                      | Substitution suggestions & smart recommendations |
-| **Security**        | Rate Limiting, Input Validation, CORS, CSRF | Prevent abuse, injection, XSS attacks         |
-| **Performance**     | Gzip Compression, Database Indexing         | 70% smaller responses, 10-100x faster queries |
-| **Deployment**      | Docker / Docker-Compose                     | Containerized deployment                      |
+| **Security**        | Rate Limiting, Input Validation, CORS, CSRF | Prevent abuse, injection, XSS attacks            |
+| **Performance**     | Gzip Compression, Database Indexing         | 70% smaller responses, 10-100x faster queries    |
+| **Deployment**      | Docker / Docker-Compose                     | Containerized deployment                         |
 
 ---
 
@@ -412,13 +803,13 @@ Routes → Controllers → Services → Models → Middleware → Database
 
 ### Background Job Processing
 
-| Queue               | Tasks                                                  | Purpose                                                         |
-| ------------------- | ------------------------------------------------------ | --------------------------------------------------------------- |
-| **Email Queue**     | Welcome emails, comment notifications, password reset  | Async email delivery (5 retries, exponential backoff)           |
-| **Image Queue**     | Optimize, compress, resize, generate thumbnails        | Non-blocking image processing (3 retries, 60s timeout)          |
-| **Search Queue**    | Index updates, category rebuilds, full reindex         | Fast search without blocking requests (2 retries, 120s timeout) |
-| **Cleanup Queue**   | Delete recipes/comments, cascade deletes, file cleanup | Garbage collection (1 retry, 30s timeout)                       |
-| **Leftover Queue**  | 12-hour notification scheduling (NEW)                  | Smart meal planning & zero-waste tracking                       |
+| Queue              | Tasks                                                  | Purpose                                                         |
+| ------------------ | ------------------------------------------------------ | --------------------------------------------------------------- |
+| **Email Queue**    | Welcome emails, comment notifications, password reset  | Async email delivery (5 retries, exponential backoff)           |
+| **Image Queue**    | Optimize, compress, resize, generate thumbnails        | Non-blocking image processing (3 retries, 60s timeout)          |
+| **Search Queue**   | Index updates, category rebuilds, full reindex         | Fast search without blocking requests (2 retries, 120s timeout) |
+| **Cleanup Queue**  | Delete recipes/comments, cascade deletes, file cleanup | Garbage collection (1 retry, 30s timeout)                       |
+| **Leftover Queue** | 12-hour notification scheduling (NEW)                  | Smart meal planning & zero-waste tracking                       |
 
 All jobs use **Bull Queue + Redis** for persistence and distributed processing.
 
@@ -789,12 +1180,12 @@ const recipe = await newRecipe.json();
 
 ## 🚀 In-Development Features (Power Features)
 
-| Feature                             | Timeline | Status      | Why It Matters                                                   |
-| ----------------------------------- | -------- | ----------- | ---------------------------------------------------------------- |
-| 🧠 **AI Substitution Engine**       | Wk 1-3   | 🔨 Dev      | Turn "miss" into "hit" - users stay engaged when they find solutions |
-| 📅 **Leftover Chain-Reaction**      | Wk 3-5   | ⏳ Pending  | Zero-waste + retention + AI integration = competitive advantage  |
-| ⚡ **Energy & Utility Filter**      | Wk 5-7   | ⏳ Pending  | Target students/bachelors/eco-users = new market segment         |
-| 🎯 **Street-Style Techniques**      | Wk 7-9   | ⏳ Pending  | Teaching "skills" not just recipes = engagement + expertise      |
+| Feature                        | Timeline | Status     | Why It Matters                                                       |
+| ------------------------------ | -------- | ---------- | -------------------------------------------------------------------- |
+| 🧠 **AI Substitution Engine**  | Wk 1-3   | 🔨 Dev     | Turn "miss" into "hit" - users stay engaged when they find solutions |
+| 📅 **Leftover Chain-Reaction** | Wk 3-5   | ⏳ Pending | Zero-waste + retention + AI integration = competitive advantage      |
+| ⚡ **Energy & Utility Filter** | Wk 5-7   | ⏳ Pending | Target students/bachelors/eco-users = new market segment             |
+| 🎯 **Street-Style Techniques** | Wk 7-9   | ⏳ Pending | Teaching "skills" not just recipes = engagement + expertise          |
 
 ---
 
@@ -837,6 +1228,7 @@ Recipe-Finder is **NOT** another clone. These 4 Power Features make it unique:
 Together, they create a **Cooking Assistant**, not just a **Recipe App**.
 
 **Why it matters for your career:**
+
 - Shows you understand **AI integration** (Claude API)
 - Demonstrates **complex system design** (Bull Queue + Redis scheduling)
 - Proves **database optimization** (compound indexes for 100x speedup)
