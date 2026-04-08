@@ -1,0 +1,315 @@
+/**
+ * INGREDIENT CARD - CSS Styling
+ * Hover tooltips showing ingredient purpose + function
+ */
+
+.ingredient-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+  cursor: help;
+  position: relative;
+}
+
+.ingredient-card:hover {
+  border-color: #ff6b35;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+  background: #fffbf8;
+}
+
+/* CARD HEADER */
+.ingredient-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* INGREDIENT INFO */
+.ingredient-info {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 1;
+}
+
+.function-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.ingredient-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ingredient-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ingredient-quantity {
+  margin: 0;
+  font-size: 12px;
+  color: #999;
+}
+
+/* FUNCTION BADGE */
+.function-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* BADGE COLORS BY FUNCTION TYPE */
+.function-badge.base {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.function-badge.protein {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.function-badge.fat {
+  background: #fce4ec;
+  color: #c2185b;
+}
+
+.function-badge.binder {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.function-badge.thickener {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.function-badge.flavoring {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.function-badge.liquid {
+  background: #e0f2f1;
+  color: #00695c;
+}
+
+.function-badge.acid {
+  background: #f1f8e9;
+  color: #558b2f;
+}
+
+.function-badge.sweetener {
+  background: #ffe0b2;
+  color: #e65100;
+}
+
+.function-badge.texture {
+  background: #fbe9e7;
+  color: #bf360c;
+}
+
+/* TOOLTIP */
+.ingredient-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: -120px;
+  width: 300px;
+  background: white;
+  border: 2px solid #ff6b35;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: tooltipSlideUp 0.2s ease;
+}
+
+@keyframes tooltipSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* TOOLTIP ARROW */
+.ingredient-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 120px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ingredient-tooltip::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 118px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #ff6b35;
+}
+
+/* TOOLTIP SECTIONS */
+.tooltip-section {
+  margin-bottom: 12px;
+}
+
+.tooltip-section:last-of-type {
+  margin-bottom: 12px;
+}
+
+.tooltip-section h5 {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ff6b35;
+  letter-spacing: 0.5px;
+}
+
+.tooltip-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #555;
+}
+
+/* TOOLTIP ACTIONS */
+.tooltip-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.btn-tooltip,
+.btn-glossary {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn-tooltip {
+  background: #ff6b35;
+  color: white;
+}
+
+.btn-tooltip:hover {
+  background: #ff5722;
+  transform: translateY(-1px);
+}
+
+.btn-glossary {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.btn-glossary:hover {
+  background: #efefef;
+  border-color: #999;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+  .ingredient-card {
+    padding: 10px;
+  }
+
+  .ingredient-tooltip {
+    position: fixed;
+    bottom: auto;
+    top: 50%;
+    left: 50%;
+    width: 90vw;
+    max-width: 300px;
+    transform: translate(-50%, -50%);
+    margin-bottom: 0;
+  }
+
+  .ingredient-tooltip::after,
+  .ingredient-tooltip::before {
+    display: none;
+  }
+
+  .function-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .ingredient-name {
+    font-size: 13px;
+  }
+
+  .ingredient-quantity {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ingredient-card-header {
+    gap: 8px;
+  }
+
+  .function-icon {
+    font-size: 20px;
+  }
+
+  .ingredient-name {
+    font-size: 12px;
+  }
+
+  .ingredient-quantity {
+    font-size: 10px;
+  }
+
+  .tooltip-actions {
+    flex-direction: column;
+  }
+
+  .btn-tooltip,
+  .btn-glossary {
+    font-size: 11px;
+  }
+}

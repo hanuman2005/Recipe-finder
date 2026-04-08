@@ -5,6 +5,9 @@ import { Star, Clock, ChefHat, Users, ArrowLeft, Heart } from "lucide-react";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import RatingStars from "../components/RatingStars";
 import CommentSection from "../components/CommentSection";
+import IngredientCard from "../components/IngredientCard";
+import CookCompleteModal from "../components/CookCompleteModal";
+import ProTipsToggle from "../components/ProTipsToggle";
 
 const RecipeDetails = () => {
   const { id } = useParams();
@@ -13,6 +16,9 @@ const RecipeDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [ingredientsExplained, setIngredientsExplained] = useState([]);
+  const [showCookModal, setShowCookModal] = useState(false);
+  const [loadingIngredients, setLoadingIngredients] = useState(false);
 
   useEffect(() => {
     const fetchRecipeDetails = async () => {
@@ -25,6 +31,22 @@ const RecipeDetails = () => {
         const data = await response.json();
         const recipeData = data.data || data;
         setRecipe(recipeData);
+
+        // Fetch ingredients with explanations
+        try {
+          setLoadingIngredients(true);
+          const ingResponse = await fetch(
+            `http://localhost:5000/api/recipes/${id}/ingredients-explained`,
+          );
+          if (ingResponse.ok) {
+            const ingData = await ingResponse.json();
+            setIngredientsExplained(ingData.data || []);
+          }
+        } catch (err) {
+          console.error("Error fetching ingredient explanations:", err);
+        } finally {
+          setLoadingIngredients(false);
+        }
       } catch (error) {
         setError(error.message);
       } finally {
@@ -215,11 +237,27 @@ const RecipeDetails = () => {
               transition={{ delay: 0.4 }}
               className="card"
             >
-              <h3 className="text-2xl font-bold text-neutral-900 mb-6 flex items-center gap-2">
+              <h3 className="text-2xl font-bold text-neutral-900 mb-4 flex items-center gap-2">
                 🥘 Ingredients
               </h3>
+              <p className="text-sm text-neutral-600 mb-4">
+                💡 Hover over any ingredient to learn why it's used!
+              </p>
               <div className="space-y-2">
-                {recipe.ingredients && Array.isArray(recipe.ingredients) ? (
+                {loadingIngredients ? (
+                  <p className="text-neutral-600">
+                    Loading ingredient details...
+                  </p>
+                ) : ingredientsExplained.length > 0 ? (
+                  ingredientsExplained.map((ing, idx) => (
+                    <IngredientCard
+                      key={ing._id || idx}
+                      ingredient={ing}
+                      recipeTitle={recipe.title}
+                      onSubstituteClick={() => {}} // Can add substitution handling here
+                    />
+                  ))
+                ) : recipe.ingredients && Array.isArray(recipe.ingredients) ? (
                   recipe.ingredients.map((item, index) => (
                     <motion.div
                       key={index}
@@ -251,6 +289,7 @@ const RecipeDetails = () => {
               transition={{ delay: 0.5 }}
               className="card"
             >
+              {/* Cooking Steps */}
               <h3 className="text-2xl font-bold text-neutral-900 mb-6 flex items-center gap-2">
                 👣 Cooking Steps
               </h3>
@@ -276,8 +315,31 @@ const RecipeDetails = () => {
                   <p className="text-neutral-600">No steps listed</p>
                 )}
               </div>
+
+              {/* Cook Complete Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCookModal(true)}
+                className="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition"
+              >
+                🍳 I Cooked This!
+              </motion.button>
             </motion.div>
           </div>
+
+          {/* Pro Tips Section (Feature #7 & #4) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="card mb-8"
+          >
+            <h3 className="text-2xl font-bold text-neutral-900 mb-6">
+              💡 Pro Tips
+            </h3>
+            <ProTipsToggle recipeId={id} />
+          </motion.div>
 
           {/* Recommended Hotels Section */}
           {recipe.recommendedHotels &&
@@ -328,6 +390,17 @@ const RecipeDetails = () => {
 
           {/* Comments Section */}
           <CommentSection recipeId={id} />
+
+          {/* Cook Complete Modal - Hidden by default, shown when user clicks "I Cooked This!" */}
+          <CookCompleteModal
+            isOpen={showCookModal}
+            recipe={recipe}
+            onClose={() => setShowCookModal(false)}
+            onSaveLeftovers={(leftovers) => {
+              console.log("Leftovers saved:", leftovers);
+              setShowCookModal(false);
+            }}
+          />
         </motion.div>
       </div>
     </div>

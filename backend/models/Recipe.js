@@ -82,14 +82,30 @@ const RecipeSchema = new mongoose.Schema(
     },
 
     // ========== SECTION 3: INGREDIENTS WITH DYNAMIC SUBSTITUTION ==========
-    // Power Feature #1: Ingredient substitutions with ratios and explanations
+    // Power Feature #1: Ingredient substitutions with ratios and explanations + IMAGES
     // Helps users cook with what they have available
+    // Now references centralized Ingredient model with images, regional names, substitutes
+    //
+    // Structure:
+    // - ingredient: Reference to Ingredient document (has name, image, regional_names, substitutes)
+    // - quantity: How much for THIS recipe (e.g., 2)
+    // - unit: Measurement unit (g, ml, cup, etc)
+    // - functionType: Role in this recipe (Protein, Seasoning, etc)
+    // - notes: Recipe-specific notes for this ingredient
+    //
+    // Example flow:
+    // 1. Recipe says "2 cups paneer"
+    // 2. User clicks on "paneer" → Shows Ingredient doc with image from Unsplash
+    // 3. User sees: Image, regional names (panir, chenna), substitutes (tofu, cottage cheese)
+    // 4. User can explore alternatives before cooking
 
     ingredients: [
       {
-        name: {
-          type: String, // Ingredient name (e.g., "Milk")
-          required: true, // Must provide ingredient name
+        ingredient: {
+          type: mongoose.Schema.Types.ObjectId, // Reference to Ingredient model
+          ref: "Ingredient", // Links to Ingredient collection
+          required: true, // Must specify which ingredient
+          // When populated: will have { name, images, regional_names, substitutes, ... }
         },
 
         quantity: {
@@ -104,7 +120,7 @@ const RecipeSchema = new mongoose.Schema(
         },
 
         functionType: {
-          type: String, // Role of ingredient (Protein, Seasoning, etc)
+          type: String, // Role of ingredient IN THIS RECIPE
           enum: [
             "Base", // Main component (e.g., flour in bread)
             "Protein", // Proteins (meat, tofu, etc)
@@ -120,15 +136,10 @@ const RecipeSchema = new mongoose.Schema(
           default: "Base",
         },
 
-        // ========== SUBSTITUTES ARRAY (Power Feature #1) ==========
-        // Alternative ingredients users can use if original not available
-        substitutes: [
-          {
-            name: { type: String }, // Alternative ingredient name
-            ratio: { type: String }, // Amount ratio (e.g., "1:1", "2:1")
-            explanation: { type: String }, // Why & how to substitute (e.g., "Mix 1/2 cup milk + 1/2 tbsp butter for buttermilk")
-          },
-        ],
+        // Recipe-specific notes for THIS ingredient
+        notes: {
+          type: String, // e.g., "Room temperature", "Fresh is better", "Can substitute with paneer"
+        },
       },
     ],
 
@@ -261,15 +272,33 @@ RecipeSchema.index({ state: 1, createdAt: -1 });
 // Compound index combines three common filter fields
 RecipeSchema.index({ equipment: 1, prepTime: 1, category: 1 });
 
-// ========== TEXT SEARCH INDEX - FULL-TEXT SEARCH ==========
-// For searching recipe titles, descriptions, and ingredients
-// Enables natural language search: "Find me easy breakfast recipes with eggs"
-RecipeSchema.index({
-  title: "text", // Search in recipe title
-  description: "text", // Search in description
-  benefits: "text", // Search in health benefits
-  "ingredients.name": "text", // Search in ingredient names
-});
+// ========== WEIGHTED TEXT SEARCH INDEX - POWER FEATURE #2 ==========
+// Task 2: Smart Search API with weighted relevance scoring
+// Prioritizes matches in title > description > ingredients
+// "Chicken" in title gets 10x weight vs "Chicken" in ingredients (3x)
+// Enables: "Find me easy breakfast recipes with eggs" → Returns most relevant first
+// NOTE: Ingredient names are now in Ingredient collection (referenced by ObjectId)
+// For text search, we'll handle ingredient name matching in the service layer
+// after populating the ingredients array
+RecipeSchema.index(
+  {
+    title: "text", // Search in recipe title (highest priority)
+    description: "text", // Search in description
+    benefits: "text", // Search in health benefits
+    category: "text", // Search in category
+    state: "text", // Search in state/region
+  },
+  {
+    weights: {
+      title: 10, // Title matches = 10x weight (most important)
+      description: 5, // Description = 5x weight
+      category: 2, // Category = 2x weight
+      state: 1, // State = 1x weight (least important)
+      benefits: 2, // Benefits = 2x weight
+    },
+    name: "recipe_text_search_weighted", // Index name for debugging
+  },
+);
 
 // Index for sorting by rating (highest rated first)
 RecipeSchema.index({ rating: -1 });

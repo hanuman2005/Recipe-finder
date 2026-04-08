@@ -11,6 +11,11 @@ const recipeRoutes = require("./routes/RecipeRoutes"); // Recipe CRUD and filter
 const userRoutes = require("./routes/userRoutes"); // User profile and management routes
 const authRoutes = require("./routes/authRoutes"); // Authentication routes (login, register, etc)
 const commentRoutes = require("./routes/commentRoutes"); // Comment and rating routes
+const proTipRoutes = require("./routes/proTipRoutes"); // Feature #4: Community-submitted pro tips
+const ingredientRoutes = require("./routes/ingredientRoutes"); // Ingredient glossary + substitution data
+const ingredientExplanationRoutes = require("./routes/ingredientExplanationRoutes"); // Feature #9: Ingredient education system
+const substitutionRoutes = require("./routes/substitutionRoutes"); // Feature #1: AI Substitutions with Claude API
+const leftoverRoutes = require("./routes/leftoverRoutes"); // Feature #2: Smart Leftovers with 12-hr notifications
 
 // ========== MIDDLEWARE IMPORTS ==========
 // Middleware functions that process requests before they reach route handlers
@@ -119,6 +124,27 @@ app.use("/api/auth", authRoutes);
 
 // Mount comment routes: /api/comments/* (e.g., POST /api/comments, DELETE /api/comments/:id)
 app.use("/api/comments", commentRoutes);
+
+// Mount pro tip routes: /api/pro-tips/* (Feature #4: Street-Style Techniques)
+// Endpoints: POST /api/recipes/:id/pro-tips, GET /api/recipes/:id/pro-tips
+app.use("/", proTipRoutes);
+app.use("/api", proTipRoutes);
+
+// Mount ingredient routes: /api/ingredients/* (Ingredient glossary + substitutions)
+// Endpoints: GET /api/ingredients/search, GET /api/ingredients/:name/substitutes, etc
+app.use("/api/ingredients", ingredientRoutes);
+
+// Mount substitution routes: /api/substitutions/* (Feature #1: AI Substitutions)
+// Endpoints: GET /api/substitutions?ingredient=cream&recipe=pasta
+app.use("/api/substitutions", substitutionRoutes);
+
+// Mount leftover routes: /api/leftovers/* (Feature #2: Smart Leftovers)
+// Endpoints: POST /api/leftovers, GET /api/leftovers, GET /api/leftovers/:id/suggestions
+app.use("/api/leftovers", leftoverRoutes);
+
+// Mount ingredient explanation routes: /api/recipes/:id/ingredients-explained (Feature #9: Ingredient Education)
+// Endpoints: GET /api/recipes/:id/ingredients-explained, GET /api/ingredients/:id/why-used
+app.use("/api", ingredientExplanationRoutes);
 
 // ========== HEALTH CHECK ENDPOINTS ==========
 // These endpoints help monitoring systems check if the API is running

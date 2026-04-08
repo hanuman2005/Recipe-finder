@@ -1,0 +1,342 @@
+/**
+ * MISSING INGREDIENTS ALERT STYLES
+ *
+ * Styling for the alert banner that shows on recipe details page
+ * when user is missing some ingredients
+ * Features:
+ * - Clean alert design with progress indicator
+ * - Grid layout for quick ingredient scanning
+ * - One-click access to substitution suggestions
+ * - Mobile responsive
+ */
+
+.missing-ingredients-alert {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 1px solid #ffb74d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
+}
+
+/* ALERT HEADER - Title + Coverage Badge */
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.alert-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.alert-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e65100;
+}
+
+.coverage-badge {
+  background: white;
+  color: #ff6b35;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* PROGRESS BAR */
+.coverage-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.coverage-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b35 0%, #f7a027 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* MISSING INGREDIENTS LIST */
+.missing-ingredients-list {
+  margin-bottom: 16px;
+}
+
+.list-label {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ingredients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+/* MISSING INGREDIENT ITEM */
+.missing-ingredient-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ffe0b2;
+  transition: all 0.2s ease;
+}
+
+.missing-ingredient-item:hover {
+  border-color: #ff6b35;
+  box-shadow: 0 2px 6px rgba(255, 107, 53, 0.1);
+}
+
+.ingredient-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  flex: 1;
+}
+
+/* SUBSTITUTE BUTTON */
+.substitute-btn {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7a027 100%);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+}
+
+.substitute-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.substitute-btn:active {
+  transform: translateY(0);
+}
+
+/* SUBSTITUTED BADGE - Shows when ingredient already substituted */
+.substituted-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #c8e6c9;
+  color: #2e7d32;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.checkmark {
+  font-size: 14px;
+}
+
+.substitute-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+/* AVAILABLE INGREDIENTS INFO */
+.available-ingredients-info {
+  background: rgba(76, 175, 80, 0.1);
+  padding: 10px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #4caf50;
+  margin-bottom: 12px;
+}
+
+.info-label {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e7d32;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.available-tag {
+  display: inline-block;
+  background: white;
+  color: #2e7d32;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #c8e6c9;
+}
+
+/* BATCH ACTION */
+.batch-action {
+  border-top: 1px solid #ffe0b2;
+  padding-top: 12px;
+  text-align: center;
+}
+
+.batch-btn {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7a027 100%);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.batch-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.batch-note {
+  margin: 8px 0 0 0;
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+}
+
+/* RESPONSIVE DESIGN */
+
+/* Tablet (768px and below) */
+@media (max-width: 768px) {
+  .missing-ingredients-alert {
+    padding: 12px;
+  }
+
+  .alert-text {
+    font-size: 14px;
+  }
+
+  .ingredients-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 6px;
+  }
+
+  .missing-ingredient-item {
+    padding: 8px 10px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .substitute-btn {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 6px;
+  }
+
+  .substituted-badge {
+    margin-left: 0;
+    margin-top: 6px;
+    width: 100%;
+  }
+}
+
+/* Mobile (480px and below) */
+@media (max-width: 480px) {
+  .missing-ingredients-alert {
+    padding: 10px;
+    margin-bottom: 16px;
+  }
+
+  .alert-header {
+    gap: 8px;
+  }
+
+  .alert-text {
+    font-size: 13px;
+  }
+
+  .coverage-badge {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .ingredients-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .missing-ingredient-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px;
+  }
+
+  .ingredient-name {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .substitute-btn,
+  .substituted-badge {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .batch-btn {
+    width: 100%;
+    padding: 10px 16px;
+  }
+
+  .tags {
+    gap: 6px;
+  }
+
+  .available-tag {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+}
+
+/* ANIMATIONS */
+
+/* Fade in animation when component loads */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.missing-ingredients-alert {
+  animation: fadeIn 0.3s ease-out;
+}

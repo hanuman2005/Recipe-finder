@@ -213,6 +213,62 @@ exports.searchRecipes = async (req, res) => {
 };
 
 /**
+ * HANDLER: GET /api/recipes/smart-search
+ * TASK 2: Smart Search API - MongoDB text search with weighted relevance
+ * Uses weighted text index: title (10x) > description (5x) > ingredients (3x)
+ * Example: "Chicken masala" returns dishes matching "Chicken" in title first
+ * @route GET /api/recipes/smart-search?query=chicken&page=1&limit=20
+ * @param {String} req.query.query - Search query (required)
+ * @param {Number} req.query.page - Page number for pagination (default: 1)
+ * @param {Number} req.query.limit - Results per page (default: 20)
+ * @returns {200} Sorted array of matching recipes by relevance score
+ * @returns {400} If search query missing
+ */
+exports.smartSearch = async (req, res) => {
+  try {
+    // ========== VALIDATE SEARCH QUERY ==========
+    const { query, page = 1, limit = 20 } = req.query;
+
+    if (!query || query.trim() === "") {
+      return sendError(
+        res,
+        400,
+        "MISSING_SEARCH_QUERY",
+        "Search query required",
+        { example: "?query=chicken&page=1&limit=20" },
+      );
+    }
+
+    // ========== CALL SERVICE ==========
+    // Service uses MongoDB $text operator with weighted index
+    const results = await recipeService.smartSearch(
+      query,
+      parseInt(page),
+      parseInt(limit),
+    );
+
+    // Success response with pagination info
+    sendPaginated(
+      res,
+      200,
+      `Found ${results.data.length} recipes matching "${query}"`,
+      results.data,
+      {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: results.total,
+        pages: Math.ceil(results.total / parseInt(limit)),
+      },
+    );
+  } catch (error) {
+    // Error response: internal server error
+    sendError(res, 500, "SMART_SEARCH_FAILED", error.message, {
+      query: req.query.query,
+    });
+  }
+};
+
+/**
  * HANDLER: GET /api/recipes/user/my-recipes
  * Get all recipes created by authenticated user
  * @route GET /api/recipes/user/my-recipes

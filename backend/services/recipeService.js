@@ -229,6 +229,58 @@ class RecipeService {
   }
 
   /**
+   * FUNCTION: Smart Search - MongoDB Text Search with Weighted Relevance Scoring
+   * TASK 2: Uses weighted text index for intelligent recipe discovery
+   * Weights: title (10x) > description (5x) > ingredients (3x) > category (2x)
+   * Example: "Chicken" in title ranks higher than "Chicken" in ingredients
+   * @param {String} query - Search query (required)
+   * @param {Number} page - Page number for pagination (default: 1)
+   * @param {Number} limit - Results per page (default: 20)
+   * @returns {Object} {data: recipes[], total: count}
+   * @throws {Error} If query empty
+   */
+  async smartSearch(query, page = 1, limit = 20) {
+    // ========== VALIDATE INPUT ==========
+    if (!query || !query.trim()) {
+      throw AppError.badRequest("Search query required", "EMPTY_QUERY", {
+        minLength: 1,
+      });
+    }
+
+    // Ensure pagination values are valid
+    page = Math.max(1, parseInt(page) || 1);
+    limit = Math.min(100, Math.max(1, parseInt(limit) || 20));
+
+    // ========== EXECUTE WEIGHTED TEXT SEARCH ==========
+    // $text operator uses the weighted text index created in Recipe model
+    // Weights defined in index: title: 10, description: 5, ingredients: 3, etc.
+    // $meta: "textScore" returns relevance score for each result
+
+    const [recipes, total] = await Promise.all([
+      // Query 1: Find recipes and sort by relevance score
+      Recipe.find(
+        { $text: { $search: query } }, // Text search using weighted index
+        { score: { $meta: "textScore" } }, // Add relevance score to results
+      )
+        .sort({ score: { $meta: "textScore" } }) // Sort by relevance (highest first)
+        .skip((page - 1) * limit) // Pagination: skip previous pages
+        .limit(parseInt(limit)) // Pagination: limit results per page
+        .populate("user", "name email"), // Populate user info instead of ID
+
+      // Query 2: Count total results matching query
+      Recipe.countDocuments({
+        $text: { $search: query },
+      }),
+    ]);
+
+    // Return results with metadata
+    return {
+      data: recipes, // Array of recipes sorted by relevance score
+      total, // Total recipes matching the search
+    };
+  }
+
+  /**
    * FUNCTION: Get all recipes created by specific user
    * @param {String} userId - User's MongoDB ID
    * @returns {Array} Array of Recipe documents

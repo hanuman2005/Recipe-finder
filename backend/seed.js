@@ -11,15 +11,85 @@ const dummyRecipes = [
     title: "Masala Dosa",
     description: "Crispy South Indian crepe filled with spiced potato curry",
     image: "https://via.placeholder.com/300?text=Masala+Dosa",
+    // ========== TASK 1: Ingredient Function Field ==========
+    // Each ingredient now includes functionType and substitutes array
+    // functionType: "Base", "Protein", "Vegetable", "Thickener", "Binder", "Seasoning", "Acid", "Fat", "Leavening", "Flavoring"
     ingredients: [
-      "Rice flour",
-      "Urad dal",
-      "Potatoes",
-      "Onions",
-      "Green chilies",
-      "Mustard seeds",
-      "Curry leaves",
-      "Oil",
+      {
+        name: "Rice flour",
+        quantity: 2,
+        unit: "cup",
+        functionType: "Base",
+        substitutes: [
+          {
+            name: "Regular rice (grind yourself)",
+            ratio: "1:1",
+            explanation:
+              "Rice flour is just ground rice mixed with water. You can use regular rice instead.",
+          },
+        ],
+      },
+      {
+        name: "Urad dal",
+        quantity: 1,
+        unit: "cup",
+        functionType: "Binder",
+        substitutes: [
+          {
+            name: "Gram flour + yogurt",
+            ratio: "1:1 + 2 tbsp yogurt",
+            explanation:
+              "Gram flour and yogurt together provide the binding effect that urad dal gives.",
+          },
+        ],
+      },
+      {
+        name: "Potatoes",
+        quantity: 4,
+        unit: "piece",
+        functionType: "Vegetable",
+        substitutes: [
+          {
+            name: "Sweet potatoes",
+            ratio: "1:1",
+            explanation:
+              "Sweet potatoes have more flavor and nutrition, similar texture when cooked.",
+          },
+        ],
+      },
+      {
+        name: "Mustard seeds",
+        quantity: 1,
+        unit: "tsp",
+        functionType: "Seasoning",
+        substitutes: [
+          {
+            name: "Cumin seeds",
+            ratio: "1:1",
+            explanation:
+              "Similar aromatic kick, slightly different flavor profile but works well.",
+          },
+        ],
+      },
+      {
+        name: "Oil",
+        quantity: 3,
+        unit: "tbsp",
+        functionType: "Fat",
+        substitutes: [
+          {
+            name: "Ghee",
+            ratio: "1:1",
+            explanation:
+              "Ghee adds richer flavor and is better for high-heat cooking.",
+          },
+          {
+            name: "Coconut oil",
+            ratio: "1:1",
+            explanation: "Coconut oil gives a subtle tropical flavor.",
+          },
+        ],
+      },
     ],
     steps: [
       "Soak rice and urad dal for 4 hours",
@@ -46,15 +116,73 @@ const dummyRecipes = [
     description: "Flattened rice breakfast dish from Central India",
     image: "https://via.placeholder.com/300?text=Poha",
     ingredients: [
-      "Flattened rice",
-      "Potatoes",
-      "Peanuts",
-      "Green chilies",
-      "Onions",
-      "Turmeric",
-      "Oil",
-      "Lemon juice",
-      "Salt",
+      {
+        name: "Flattened rice",
+        quantity: 2,
+        unit: "cup",
+        functionType: "Base",
+        substitutes: [
+          {
+            name: "Cooked rice (regular)",
+            ratio: "1:1",
+            explanation:
+              "Regular cooked rice can replace poha, just drain excess water first.",
+          },
+        ],
+      },
+      {
+        name: "Potatoes",
+        quantity: 2,
+        unit: "piece",
+        functionType: "Vegetable",
+        substitutes: [
+          {
+            name: "Cauliflower",
+            ratio: "1:1",
+            explanation:
+              "Cauliflower adds similar texture and complements the spices well.",
+          },
+        ],
+      },
+      {
+        name: "Peanuts",
+        quantity: 0.5,
+        unit: "cup",
+        functionType: "Protein",
+        substitutes: [
+          {
+            name: "Cashews",
+            ratio: "1:1",
+            explanation: "Cashews provide similar crunch and nutty flavor.",
+          },
+        ],
+      },
+      {
+        name: "Oil",
+        quantity: 2,
+        unit: "tbsp",
+        functionType: "Fat",
+        substitutes: [
+          {
+            name: "Ghee",
+            ratio: "1:1",
+            explanation: "Ghee adds richness and better flavor.",
+          },
+        ],
+      },
+      {
+        name: "Turmeric",
+        quantity: 0.5,
+        unit: "tsp",
+        functionType: "Seasoning",
+        substitutes: [
+          {
+            name: "Saffron (pinch)",
+            ratio: "1:5",
+            explanation: "Saffron is more expensive but adds luxury and color.",
+          },
+        ],
+      },
     ],
     steps: [
       "Rinse flattened rice lightly",
@@ -83,17 +211,74 @@ const dummyRecipes = [
     description: "Creamy tomato-based curry with marinated chicken pieces",
     image: "https://via.placeholder.com/300?text=Chicken+Tikka+Masala",
     ingredients: [
-      "Chicken breast",
-      "Yogurt",
-      "Tomatoes",
-      "Cream",
-      "Ginger",
-      "Garlic",
-      "Garam masala",
-      "Cumin",
-      "Coriander",
-      "Turmeric",
-      "Oil",
+      {
+        name: "Chicken breast",
+        quantity: 500,
+        unit: "g",
+        functionType: "Protein",
+        substitutes: [
+          {
+            name: "Paneer (cottage cheese)",
+            ratio: "1:1",
+            explanation:
+              "Paneer is vegetarian alternative with similar texture when marinated.",
+          },
+          {
+            name: "Tofu",
+            ratio: "1:1",
+            explanation:
+              "Firm tofu absorbs marinades well and is vegan-friendly.",
+          },
+        ],
+      },
+      {
+        name: "Cream",
+        quantity: 200,
+        unit: "ml",
+        functionType: "Fat",
+        substitutes: [
+          {
+            name: "Greek yogurt",
+            ratio: "0.8:1",
+            explanation:
+              "Greek yogurt provides tanginess and creaminess, slightly different but excellent.",
+          },
+          {
+            name: "Milk + Butter",
+            ratio: "1:0.25",
+            explanation:
+              "Mix 1 cup milk with 1/4 cup butter to emulate cream texture.",
+          },
+        ],
+      },
+      {
+        name: "Tomatoes",
+        quantity: 3,
+        unit: "piece",
+        functionType: "Acid",
+        substitutes: [
+          {
+            name: "Tomato paste",
+            ratio: "1:3",
+            explanation:
+              "Use 1 tbsp tomato paste for 1 medium tomato; concentrate is stronger.",
+          },
+        ],
+      },
+      {
+        name: "Garam masala",
+        quantity: 1,
+        unit: "tbsp",
+        functionType: "Seasoning",
+        substitutes: [
+          {
+            name: "Curry powder",
+            ratio: "1:1",
+            explanation:
+              "Curry powder has similar warming spices, slightly different blend.",
+          },
+        ],
+      },
     ],
     steps: [
       "Marinate chicken in yogurt and spices for 30 mins",
@@ -121,18 +306,67 @@ const dummyRecipes = [
     description: "Aromatic rice dish with meat and fragrant spices",
     image: "https://via.placeholder.com/300?text=Biryani",
     ingredients: [
-      "Basmati rice",
-      "Mutton or Chicken",
-      "Yogurt",
-      "Ghee",
-      "Onions",
-      "Ginger-garlic paste",
-      "Saffron",
-      "Bay leaves",
-      "Cinnamon",
-      "Cardamom",
-      "Cloves",
-      "Mint leaves",
+      {
+        name: "Basmati rice",
+        quantity: 2,
+        unit: "cup",
+        functionType: "Base",
+        substitutes: [
+          {
+            name: "Jasmine rice",
+            ratio: "1:1",
+            explanation:
+              "Similar aromatic quality and texture, slightly different fragrance.",
+          },
+        ],
+      },
+      {
+        name: "Mutton or Chicken",
+        quantity: 500,
+        unit: "g",
+        functionType: "Protein",
+        substitutes: [
+          {
+            name: "Lamb",
+            ratio: "1:1",
+            explanation: "Lamb is tender and takes marinades well.",
+          },
+          {
+            name: "Vegetables (mixed)",
+            ratio: "1:1",
+            explanation:
+              "Veggie biryani with paneer and mixed vegetables is equally delicious.",
+          },
+        ],
+      },
+      {
+        name: "Ghee",
+        quantity: 100,
+        unit: "ml",
+        functionType: "Fat",
+        substitutes: [
+          {
+            name: "Butter",
+            ratio: "1:1",
+            explanation:
+              "Butter works but ghee is traditional for higher smoke point.",
+          },
+        ],
+      },
+      {
+        name: "Yogurt",
+        quantity: 200,
+        unit: "ml",
+        functionType: "Binder",
+        substitutes: [
+          {
+            name: "Sour cream",
+            ratio: "0.8:1",
+            explanation:
+              "Sour cream provides similar marinating effect with tanginess.",
+          },
+        ],
+      },
     ],
     steps: [
       "Marinate meat in yogurt and spices for 1 hour",

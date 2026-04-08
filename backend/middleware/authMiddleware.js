@@ -87,6 +87,46 @@ const protect = async (req, res, next) => {
   }
 };
 
+/**
+ * MIDDLEWARE: Restrict Access - Check user role after authentication
+ * Must be used AFTER protect middleware - checks if authenticated user has required role
+ * Applied to admin/restricted routes (e.g., POST /api/recipes/:id/approve)
+ *
+ * Usage in routes:
+ * router.post('/approve', protect, restrictTo("admin"), proTipController.approveProTip);
+ * // protect runs first (validates user), then restrictTo checks role
+ *
+ * @param {String} ...roles - One or more role names (e.g., "admin", "moderator")
+ * @returns {Function} Middleware function
+ */
+const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    // ========== STEP 1: CHECK IF USER IS AUTHENTICATED ==========
+    // req.user should be set by protect middleware
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: "Not authenticated - please login first",
+      });
+    }
+
+    // ========== STEP 2: CHECK IF USER ROLE IS IN ALLOWED ROLES ==========
+    // Check if user's role exists in the roles array passed to middleware
+    // Example: restrictTo("admin", "moderator") checks if user.role is "admin" or "moderator"
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: `Not authorized - this action requires one of: ${roles.join(", ")} role`,
+        userRole: req.user.role, // Show user what their role is
+      });
+    }
+
+    // ========== STEP 3: PASS CONTROL TO NEXT MIDDLEWARE ==========
+    // User has required role, allow request to proceed
+    next(); // Continue to controller
+  };
+};
+
 // ========== EXPORT MIDDLEWARE ==========
-// Export protect function for use in route files
-module.exports = { protect };
+// Export protect and restrictTo functions for use in route files
+module.exports = { protect, restrictTo };

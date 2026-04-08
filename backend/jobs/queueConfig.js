@@ -60,6 +60,15 @@ const searchQueue = new Queue("search", redisConfig);
  */
 const cleanupQueue = new Queue("cleanup", redisConfig);
 
+/**
+ * LEFTOVER QUEUE (Feature #2)
+ * Handles: 12-hour leftover notifications, recipe suggestions
+ * Retry: 3 attempts (notifications are important)
+ * Timeout: 45 seconds
+ * Trigger: After user completes recipe + adds leftover
+ */
+const leftoverQueue = new Queue("leftovers", redisConfig);
+
 // ========== QUEUE EVENT LISTENERS ==========
 
 /**
@@ -81,6 +90,10 @@ cleanupQueue.on("active", (job) => {
   console.log(`🧹 Cleanup job ${job.id} started`);
 });
 
+leftoverQueue.on("active", (job) => {
+  console.log(`📦 Leftover job ${job.id} started`);
+});
+
 /**
  * When a job completes successfully
  */
@@ -98,6 +111,10 @@ searchQueue.on("completed", (job) => {
 
 cleanupQueue.on("completed", (job) => {
   console.log(`✅ Cleanup job ${job.id} completed`);
+});
+
+leftoverQueue.on("completed", (job) => {
+  console.log(`✅ Leftover job ${job.id} completed`);
 });
 
 /**
@@ -119,23 +136,47 @@ cleanupQueue.on("failed", (job, err) => {
   console.error(`❌ Cleanup job ${job.id} failed:`, err.message);
 });
 
+leftoverQueue.on("failed", (job, err) => {
+  console.error(`❌ Leftover job ${job.id} failed:`, err.message);
+});
+
 /**
  * When job queue encounters an error
+ * GRACEFUL DEGRADATION: Log as warning, don't crash
+ * Redis is optional for core API functionality
+ * Background jobs will retry when Redis becomes available
  */
+const logError = (queueName, err) => {
+  const isConnectionError =
+    err.code === "ECONNREFUSED" || err.code === "ENOTFOUND";
+  if (isConnectionError) {
+    console.warn(
+      `⚠️  ${queueName} Queue: Redis unavailable (${err.code}). ` +
+        `Core API still works. Jobs will queue when Redis available.`,
+    );
+  } else {
+    console.warn(`⚠️  ${queueName} Queue Error: ${err.message} (will retry)`);
+  }
+};
+
 emailQueue.on("error", (err) => {
-  console.error("❌ Email Queue Error:", err.message);
+  logError("Email", err);
 });
 
 imageQueue.on("error", (err) => {
-  console.error("❌ Image Queue Error:", err.message);
+  logError("Image", err);
 });
 
 searchQueue.on("error", (err) => {
-  console.error("❌ Search Queue Error:", err.message);
+  logError("Search", err);
 });
 
 cleanupQueue.on("error", (err) => {
-  console.error("❌ Cleanup Queue Error:", err.message);
+  logError("Cleanup", err);
+});
+
+leftoverQueue.on("error", (err) => {
+  logError("Leftover", err);
 });
 
 module.exports = {
@@ -143,5 +184,6 @@ module.exports = {
   imageQueue,
   searchQueue,
   cleanupQueue,
+  leftoverQueue,
   redisConfig,
 };

@@ -1,0 +1,275 @@
+/**
+ * PRO TIPS TOGGLE - CSS Styling
+ */
+
+.pro-tips-toggle {
+  margin: 32px 0;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.tab {
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  position: relative;
+  top: 2px;
+}
+
+.tab:hover {
+  color: #ff6b35;
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.tab.active {
+  color: #ff6b35;
+  border-bottom-color: #ff6b35;
+}
+
+/* LOADING STATE */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 12px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f0f0f0;
+  border-top-color: #ff6b35;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading p {
+  color: #999;
+  font-size: 14px;
+}
+
+/* ERROR STATE */
+.error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border-left: 4px solid #c62828;
+  font-size: 14px;
+}
+
+/* TIPS CONTENT */
+.tips-content {
+  min-height: 100px;
+}
+
+.tips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* TIP CARD */
+.tip-card {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.tip-card:hover {
+  border-color: #ff6b35;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+}
+
+.tip-card.ai-tip {
+  background: linear-gradient(135deg, #fff8f0 0%, #fffbf5 100%);
+  border-color: #ffe0cc;
+}
+
+.tip-card.ai-tip:hover {
+  border-color: #ff6b35;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+}
+
+/* AI BADGE */
+.ai-badge {
+  display: inline-block;
+  background: #ff6b35;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* TIP HEADER */
+.tip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.tip-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  flex: 1;
+}
+
+.helpful-count {
+  font-size: 12px;
+  color: #4caf50;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* TIP EXPLANATION */
+.tip-explanation {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* STEP INFO */
+.step-info {
+  display: inline-block;
+  background: #e3f2fd;
+  color: #1976d2;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+/* TIP META */
+.tip-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #999;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.tip-meta .by {
+  font-weight: 500;
+  color: #666;
+}
+
+.tip-meta .date {
+  font-size: 11px;
+}
+
+/* RESPONSIVE DESIGN */
+
+@media (max-width: 768px) {
+  .pro-tips-toggle {
+    padding: 16px;
+    margin: 20px 0;
+  }
+
+  .tabs {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .tab {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .tip-card {
+    padding: 12px;
+  }
+
+  .tip-header {
+    flex-direction: column;
+  }
+
+  .tip-title {
+    font-size: 15px;
+  }
+
+  .tip-explanation {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pro-tips-toggle {
+    padding: 12px;
+    margin: 16px 0;
+    border-radius: 8px;
+  }
+
+  .tabs {
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .tab {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .tip-card {
+    padding: 10px;
+  }
+
+  .tip-title {
+    font-size: 14px;
+  }
+
+  .tip-explanation {
+    font-size: 12px;
+  }
+
+  .tip-card {
+    border-radius: 6px;
+  }
+}
