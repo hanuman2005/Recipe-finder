@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import RecipeCard from "../components/recipe/RecipeCard";
 import EquipmentFilter from "../components/filters/EquipmentFilter";
-import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import { Button, Input, LoadingSkeleton, EmptyState, Alert, Card } from "../components/ui";
 import { useFilterStore } from "../store/filterStore";
 
 const SearchResults = () => {
@@ -13,277 +13,173 @@ const SearchResults = () => {
   const [error, setError] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filteredRecipes, setFilteredRecipes] = useState([]);
-
-  // Get filters from Zustand store (Feature #3)
   const { selectedEquipment, maxPrepTime, maxCookTime } = useFilterStore();
 
   useEffect(() => {
-    if (query.trim() === "") {
-      setRecipes([]);
-      setFilteredRecipes([]);
-      return;
-    }
-
-    // Debounce: wait 500ms after user stops typing
+    if (!query.trim()) { setRecipes([]); setFilteredRecipes([]); return; }
     const timer = setTimeout(async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(
-          `http://localhost:5000/api/recipes/search?title=${encodeURIComponent(query)}`,
+        const res = await fetch(
+          `http://localhost:5000/api/recipes/search?title=${encodeURIComponent(query)}`
         );
-
-        if (!response.ok) throw new Error("No recipes found");
-        const data = await response.json();
-        setRecipes(data);
+        if (!res.ok) throw new Error("No recipes found");
+        setRecipes(await res.json());
       } catch (err) {
         setError(err.message);
         setRecipes([]);
       } finally {
         setLoading(false);
       }
-    }, 500); // Wait 500ms after typing stops
-
-    return () => clearTimeout(timer); // Clean up if component unmounts
+    }, 500);
+    return () => clearTimeout(timer);
   }, [query]);
 
-  // Apply equipment and time filters (Feature #3)
   useEffect(() => {
     let filtered = recipes;
-
-    // Filter by equipment
     if (selectedEquipment.length > 0) {
-      filtered = filtered.filter((recipe) => {
-        const recipeEquipment = recipe.equipment || [];
-        return selectedEquipment.some((eq) =>
-          recipeEquipment.some((rEq) =>
-            rEq.toLowerCase().includes(eq.toLowerCase()),
-          ),
-        );
-      });
-    }
-
-    // Filter by prep time
-    if (maxPrepTime > 0) {
-      filtered = filtered.filter(
-        (recipe) => (recipe.prepTime || 0) <= maxPrepTime,
+      filtered = filtered.filter((r) =>
+        selectedEquipment.some((eq) =>
+          (r.equipment || []).some((re) => re.toLowerCase().includes(eq.toLowerCase()))
+        )
       );
     }
-
-    // Filter by cook time
-    if (maxCookTime > 0) {
-      filtered = filtered.filter(
-        (recipe) => (recipe.cookTime || 0) <= maxCookTime,
-      );
-    }
-
+    if (maxPrepTime > 0) filtered = filtered.filter((r) => (r.prepTime || 0) <= maxPrepTime);
+    if (maxCookTime > 0) filtered = filtered.filter((r) => (r.cookTime || 0) <= maxCookTime);
     setFilteredRecipes(filtered);
   }, [recipes, selectedEquipment, maxPrepTime, maxCookTime]);
 
-  const displayedRecipes =
-    filteredRecipes.length > 0 ? filteredRecipes : recipes;
+  const displayed = filteredRecipes.length > 0 ? filteredRecipes : recipes;
+  const activeFilters = [
+    selectedEquipment.length > 0 && `${selectedEquipment.length} equipment`,
+    maxPrepTime > 0 && `prep ≤${maxPrepTime}m`,
+    maxCookTime > 0 && `cook ≤${maxCookTime}m`,
+  ].filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white pb-12">
-      {/* Header with Search */}
+    <div className="min-h-screen bg-neutral-50 pb-12">
+      {/* Search Header */}
       <div className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-12 px-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold mb-8">
-            🔍 Find Recipes
-          </h1>
-
-          {/* Search Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative"
-          >
-            <Search
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50"
-              size={24}
-            />
-            <input
-              type="text"
-              placeholder="Search for recipes by title, ingredients, or cuisine..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:bg-white/15 transition text-lg"
-            />
-          </motion.div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-8">🔍 Find Recipes</h1>
+          <Input
+            type="text"
+            placeholder="Search recipes by title, ingredients, or cuisine..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            icon={Search}
+            variant="glass"
+            className="text-lg py-4"
+          />
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:w-72"
-          >
-            {/* Filter Toggle Button (Mobile) */}
-            <button
+          <div className="lg:w-72 flex-shrink-0">
+            <Button
+              variant="primary"
+              fullWidth
+              className="lg:hidden mb-4"
               onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden w-full mb-6 flex items-center gap-2 px-4 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition"
             >
-              <Filter size={20} />
+              <Filter size={18} />
               {showFilters ? "Hide Filters" : "Show Filters"}
-            </button>
-
-            {/* Filters */}
+            </Button>
             <AnimatePresence>
-              {(showFilters || window.innerWidth >= 1024) && (
+              {(showFilters || true) && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="card p-6 space-y-6"
+                  className="hidden lg:block"
                 >
-                  <div>
-                    <h3 className="text-lg font-bold text-neutral-900 mb-4 flex items-center gap-2">
-                      ⚡ Equipment
+                  <Card padding="md">
+                    <h3 className="text-base font-bold text-neutral-900 mb-4 flex items-center gap-2">
+                      ⚡ Equipment Filter
                     </h3>
                     <EquipmentFilter />
-                  </div>
+                  </Card>
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+            {showFilters && (
+              <Card padding="md" className="lg:hidden">
+                <h3 className="text-base font-bold text-neutral-900 mb-4">⚡ Equipment Filter</h3>
+                <EquipmentFilter />
+              </Card>
+            )}
+          </div>
 
           {/* Results */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex-1"
-          >
-            {/* Search Status */}
-            <div className="mb-8">
-              {query && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 border border-primary-200 rounded-full"
-                >
-                  <span className="text-sm text-neutral-700">
-                    Searching for: <strong>"{query}"</strong>
+          <div className="flex-1 min-w-0">
+            {/* Active search tags */}
+            {query && (
+              <div className="flex flex-wrap items-center gap-2 mb-6">
+                <span className="text-sm text-neutral-500">
+                  Searching: <strong className="text-neutral-800">"{query}"</strong>
+                </span>
+                {activeFilters.map((f) => (
+                  <span key={f} className="text-xs bg-primary-100 text-primary-700 px-2.5 py-1 rounded-full font-medium">
+                    {f}
                   </span>
-                  {(selectedEquipment.length > 0 ||
-                    maxPrepTime > 0 ||
-                    maxCookTime > 0) && (
-                    <span className="text-xs bg-primary-500 text-white px-2 py-1 rounded-full">
-                      {[
-                        selectedEquipment.length > 0 &&
-                          `${selectedEquipment.length} equipment`,
-                        maxPrepTime > 0 && `prep ≤${maxPrepTime}m`,
-                        maxCookTime > 0 && `cook ≤${maxCookTime}m`,
-                      ]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </span>
-                  )}
-                </motion.div>
-              )}
-            </div>
-
-            {/* Loading State */}
-            {loading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <LoadingSkeleton key={i} />
                 ))}
               </div>
             )}
 
-            {/* Error State */}
+            {loading && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[1, 2, 3, 4].map((i) => <LoadingSkeleton key={i} />)}
+              </div>
+            )}
+
             {error && !loading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="bg-red-50 border-l-4 border-red-500 p-6 rounded text-center"
-              >
-                <p className="text-red-700 font-semibold mb-2">
-                  No recipes found
-                </p>
-                <p className="text-red-600 text-sm">{error}</p>
-              </motion.div>
+              <Alert type="error" message="No recipes found matching your search." className="mb-6" />
             )}
 
-            {/* No Query State */}
             {!query && !loading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-12"
-              >
-                <Search className="mx-auto mb-4 text-neutral-400" size={48} />
-                <p className="text-lg text-neutral-600 font-semibold">
-                  Start searching
-                </p>
-                <p className="text-neutral-500">
-                  Enter a recipe name or ingredient to get started
-                </p>
-              </motion.div>
+              <EmptyState
+                icon={Search}
+                title="Start searching"
+                description="Enter a recipe name or ingredient to get started"
+              />
             )}
 
-            {/* Results Grid */}
-            {!loading && displayedRecipes.length > 0 && (
-              <motion.div
-                layout
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
-              >
-                <AnimatePresence mode="popLayout">
-                  {displayedRecipes.map((recipe, idx) => (
-                    <motion.div
-                      key={recipe._id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ delay: idx * 0.1 }}
-                    >
-                      <RecipeCard recipe={recipe} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            )}
-
-            {/* No Results with Query */}
-            {!loading &&
-              query &&
-              displayedRecipes.length === 0 &&
-              recipes.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-12 bg-neutral-50 rounded-lg"
-                >
-                  <p className="text-neutral-700 font-semibold mb-2">
-                    No recipes match your filters
-                  </p>
-                  <p className="text-neutral-600 text-sm">
-                    Try adjusting your filters or search query
-                  </p>
+            {!loading && displayed.length > 0 && (
+              <>
+                <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <AnimatePresence mode="popLayout">
+                    {displayed.map((recipe, idx) => (
+                      <motion.div
+                        key={recipe._id}
+                        layout
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -16 }}
+                        transition={{ delay: idx * 0.06 }}
+                      >
+                        <RecipeCard recipe={recipe} />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </motion.div>
-              )}
-
-            {/* Results Count */}
-            {!loading && displayedRecipes.length > 0 && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-center text-neutral-600 text-sm mt-8"
-              >
-                Found {displayedRecipes.length} recipe
-                {displayedRecipes.length !== 1 ? "s" : ""} •{" "}
-                {recipes.length > displayedRecipes.length && (
-                  <span>
-                    {recipes.length - displayedRecipes.length} hidden by filters
-                  </span>
-                )}
-              </motion.p>
+                <p className="text-center text-neutral-400 text-sm mt-8">
+                  {displayed.length} recipe{displayed.length !== 1 ? "s" : ""} found
+                  {recipes.length > displayed.length && ` · ${recipes.length - displayed.length} hidden by filters`}
+                </p>
+              </>
             )}
-          </motion.div>
+
+            {!loading && query && displayed.length === 0 && recipes.length > 0 && (
+              <EmptyState
+                emoji="🔎"
+                title="No recipes match your filters"
+                description="Try adjusting your equipment filter or time limits"
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,60 +1,64 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import Button from "../components/ui/Button";
+import { motion, AnimatePresence } from "framer-motion";
+import { Upload, X, Plus } from "lucide-react";
+import { Button, Input, Select, Textarea, Alert, Card } from "../components/ui";
 import EquipmentSelector from "../components/filters/EquipmentSelector";
-import { motion } from "framer-motion";
-import { Upload, AlertCircle, CheckCircle, X } from "lucide-react";
+
+const CATEGORIES = ["Italian", "Mexican", "Asian", "Indian", "Mediterranean", "Vegan", "Dessert", "Other"];
+const DIFFICULTIES = ["Easy", "Medium", "Hard", "Expert"];
+
+const SectionTitle = ({ emoji, title }) => (
+  <h2 className="text-xl font-bold text-neutral-900 mb-6 flex items-center gap-2">
+    <span>{emoji}</span> {title}
+  </h2>
+);
 
 const UploadRecipe = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const [recipe, setRecipe] = useState({
-    title: "",
-    description: "",
-    image: "",
-    ingredients: [],
-    steps: [],
-    equipment: [],
-    category: "",
-    state: "",
-    prepTime: 0,
-    cookTime: 0,
-    difficulty: "Medium",
-    benefits: "",
+    title: "", description: "", image: "", ingredients: [],
+    steps: [], equipment: [], category: "", state: "",
+    prepTime: 0, cookTime: 0, difficulty: "Medium", benefits: "",
   });
-
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const set = (name, value) => setRecipe((r) => ({ ...r, [name]: value }));
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setRecipe({ ...recipe, [name]: value });
+    setError("");
+    set(e.target.name, e.target.value);
   };
 
-  const handleIngredientAdd = () => {
-    setRecipe({
-      ...recipe,
-      ingredients: [
-        ...recipe.ingredients,
-        { name: "", quantity: "", unit: "" },
-      ],
-    });
+  const addIngredient = () =>
+    set("ingredients", [...recipe.ingredients, { name: "", quantity: "", unit: "" }]);
+
+  const updateIngredient = (idx, field, value) => {
+    const updated = [...recipe.ingredients];
+    updated[idx][field] = value;
+    set("ingredients", updated);
   };
 
-  const handleStepAdd = () => {
-    setRecipe({
-      ...recipe,
-      steps: [
-        ...recipe.steps,
-        { stepNumber: recipe.steps.length + 1, description: "" },
-      ],
-    });
+  const removeIngredient = (idx) =>
+    set("ingredients", recipe.ingredients.filter((_, i) => i !== idx));
+
+  const addStep = () =>
+    set("steps", [...recipe.steps, { stepNumber: recipe.steps.length + 1, description: "" }]);
+
+  const updateStep = (idx, value) => {
+    const updated = [...recipe.steps];
+    updated[idx].description = value;
+    set("steps", updated);
   };
 
-  const validateForm = () => {
+  const removeStep = (idx) =>
+    set("steps", recipe.steps.filter((_, i) => i !== idx).map((s, i) => ({ ...s, stepNumber: i + 1 })));
+
+  const validate = () => {
     if (!recipe.title.trim()) return "Title is required";
     if (!recipe.description.trim()) return "Description is required";
     if (!recipe.image.trim()) return "Image URL is required";
@@ -67,437 +71,279 @@ const UploadRecipe = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!user) {
-      setError("You must be logged in to add a recipe!");
-      return;
-    }
-
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+    setError(""); setSuccess("");
+    if (!user) { setError("You must be logged in to add a recipe"); return; }
+    const err = validate();
+    if (err) { setError(err); return; }
 
     setLoading(true);
-
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/recipes", {
+      const res = await fetch("http://localhost:5000/api/recipes", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(recipe),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to upload recipe");
-      }
-
-      setSuccess("✅ Recipe uploaded successfully! Redirecting...");
-      setTimeout(() => navigate("/"), 2000);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to upload recipe");
+      setSuccess("Recipe uploaded successfully! Redirecting...");
+      setTimeout(() => navigate("/"), 1500);
     } catch (err) {
-      setError(`❌ ${err.message}`);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white py-12 px-4">
+    <div className="min-h-screen bg-neutral-50 py-12 px-4">
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
         className="max-w-2xl mx-auto"
       >
-        {/* Header */}
+        {/* Page Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-2">
-            🍳 Upload Your Recipe
-          </h1>
-          <p className="text-lg text-neutral-600">
-            Share your culinary masterpiece with the community
-          </p>
+          <h1 className="text-4xl font-bold text-neutral-900 mb-2">🍳 Upload Your Recipe</h1>
+          <p className="text-neutral-500">Share your culinary masterpiece with the community</p>
         </div>
 
-        {/* Alerts */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded flex items-start gap-3"
-          >
-            <AlertCircle
-              className="text-red-500 flex-shrink-0 mt-0.5"
-              size={20}
-            />
-            <div className="flex-1">
-              <p className="text-red-700 font-semibold">Error</p>
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-            <button
-              onClick={() => setError("")}
-              className="text-red-500 hover:text-red-700"
-            >
-              <X size={18} />
-            </button>
-          </motion.div>
-        )}
+        {error && <Alert type="error" message={error} onDismiss={() => setError("")} className="mb-6" />}
+        {success && <Alert type="success" message={success} className="mb-6" />}
 
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded flex items-start gap-3"
-          >
-            <CheckCircle
-              className="text-green-500 flex-shrink-0 mt-0.5"
-              size={20}
-            />
-            <div className="flex-1">
-              <p className="text-green-700 font-semibold">Success</p>
-              <p className="text-green-600 text-sm">{success}</p>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-xl shadow-lg overflow-hidden divide-y divide-neutral-200"
-        >
-          {/* Basic Info Section */}
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-neutral-900 mb-6 flex items-center gap-2">
-              📝 Basic Information
-            </h2>
-
-            <div className="space-y-6">
-              {/* Title */}
+        <form onSubmit={handleSubmit} className="space-y-1">
+          {/* Basic Info */}
+          <Card padding="lg" className="rounded-b-none">
+            <SectionTitle emoji="📝" title="Basic Information" />
+            <div className="space-y-5">
+              <Input
+                label="Recipe Title"
+                name="title"
+                placeholder="e.g., Homemade Pasta Carbonara"
+                value={recipe.title}
+                onChange={handleChange}
+                required
+              />
+              <Textarea
+                label="Description"
+                name="description"
+                placeholder="Describe your recipe, its origin, and why it's special..."
+                value={recipe.description}
+                onChange={handleChange}
+                rows={4}
+                required
+              />
               <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Recipe Title <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  placeholder="e.g., Homemade Pasta Carbonara"
-                  value={recipe.title}
-                  onChange={handleChange}
-                  className="input-field"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Description <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="description"
-                  placeholder="Describe your recipe, its origin, and why it's special..."
-                  value={recipe.description}
-                  onChange={handleChange}
-                  rows="4"
-                  className="input-field resize-none"
-                />
-              </div>
-
-              {/* Image URL */}
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Image URL <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
+                <Input
+                  label="Image URL"
                   name="image"
                   placeholder="https://example.com/recipe.jpg"
                   value={recipe.image}
                   onChange={handleChange}
-                  className="input-field"
+                  required
                 />
-                {recipe.image && (
-                  <div className="mt-4 rounded-lg overflow-hidden bg-neutral-100 h-48 flex items-center justify-center">
-                    <img
-                      src={recipe.image}
-                      alt="Recipe preview"
-                      className="max-h-full object-cover"
-                      onError={(e) => (e.target.style.display = "none")}
-                    />
-                  </div>
-                )}
+                <AnimatePresence>
+                  {recipe.image && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="mt-3 rounded-lg overflow-hidden bg-neutral-100 h-44 flex items-center justify-center"
+                    >
+                      <img
+                        src={recipe.image}
+                        alt="Preview"
+                        className="max-h-full w-full object-cover"
+                        onError={(e) => (e.target.style.display = "none")}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
-          </div>
+          </Card>
 
-          {/* Recipe Details Section */}
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-neutral-900 mb-6">
-              🏷️ Recipe Details
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="category"
-                  value={recipe.category}
-                  onChange={handleChange}
-                  className="input-field"
-                >
-                  <option value="">Select a category</option>
-                  <option value="Italian">Italian</option>
-                  <option value="Mexican">Mexican</option>
-                  <option value="Asian">Asian</option>
-                  <option value="Indian">Indian</option>
-                  <option value="Mediterranean">Mediterranean</option>
-                  <option value="Vegan">Vegan</option>
-                  <option value="Dessert">Dessert</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              {/* State */}
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  State/Region <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="state"
-                  placeholder="e.g., Tamil Nadu"
-                  value={recipe.state}
-                  onChange={handleChange}
-                  className="input-field"
-                />
-              </div>
-
-              {/* Prep Time */}
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Prep Time (minutes)
-                </label>
-                <input
-                  type="number"
-                  name="prepTime"
-                  value={recipe.prepTime}
-                  onChange={handleChange}
-                  className="input-field"
-                />
-              </div>
-
-              {/* Cook Time */}
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Cook Time (minutes)
-                </label>
-                <input
-                  type="number"
-                  name="cookTime"
-                  value={recipe.cookTime}
-                  onChange={handleChange}
-                  className="input-field"
-                />
-              </div>
-
-              {/* Difficulty */}
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Difficulty Level
-                </label>
-                <select
-                  name="difficulty"
-                  value={recipe.difficulty}
-                  onChange={handleChange}
-                  className="input-field"
-                >
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
-                  <option value="Expert">Expert</option>
-                </select>
-              </div>
-
-              {/* Benefits */}
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Health Benefits
-                </label>
-                <input
-                  type="text"
-                  name="benefits"
-                  placeholder="e.g., Rich in protein, low carb"
-                  value={recipe.benefits}
-                  onChange={handleChange}
-                  className="input-field"
-                />
-              </div>
+          {/* Details */}
+          <Card padding="lg" className="rounded-none">
+            <SectionTitle emoji="🏷️" title="Recipe Details" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <Select
+                label="Category"
+                name="category"
+                value={recipe.category}
+                onChange={handleChange}
+                placeholder="Select a category"
+                options={CATEGORIES}
+                required
+              />
+              <Input
+                label="State / Region"
+                name="state"
+                placeholder="e.g., Tamil Nadu"
+                value={recipe.state}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Prep Time (minutes)"
+                name="prepTime"
+                type="number"
+                value={recipe.prepTime}
+                onChange={handleChange}
+              />
+              <Input
+                label="Cook Time (minutes)"
+                name="cookTime"
+                type="number"
+                value={recipe.cookTime}
+                onChange={handleChange}
+              />
+              <Select
+                label="Difficulty"
+                name="difficulty"
+                value={recipe.difficulty}
+                onChange={handleChange}
+                options={DIFFICULTIES}
+              />
+              <Input
+                label="Health Benefits"
+                name="benefits"
+                placeholder="e.g., Rich in protein, low carb"
+                value={recipe.benefits}
+                onChange={handleChange}
+              />
             </div>
-          </div>
+          </Card>
 
-          {/* Equipment Section (Feature #3) */}
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-neutral-900 mb-6">
-              ⚡ Equipment Used
-            </h2>
+          {/* Equipment */}
+          <Card padding="lg" className="rounded-none">
+            <SectionTitle emoji="⚡" title="Equipment Used" />
             <EquipmentSelector
               value={recipe.equipment}
-              onChange={(eq) => setRecipe({ ...recipe, equipment: eq })}
+              onChange={(eq) => set("equipment", eq)}
             />
-          </div>
+          </Card>
 
-          {/* Ingredients Section */}
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-neutral-900 mb-6">
-              🥘 Ingredients
-            </h2>
-
-            <div className="space-y-4">
-              {recipe.ingredients.map((ing, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="grid grid-cols-12 gap-3 items-end"
-                >
-                  <input
-                    type="text"
-                    placeholder="Ingredient name"
-                    value={ing.name}
-                    onChange={(e) => {
-                      const newIngs = [...recipe.ingredients];
-                      newIngs[idx].name = e.target.value;
-                      setRecipe({ ...recipe, ingredients: newIngs });
-                    }}
-                    className="input-field col-span-6"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Qty"
-                    value={ing.quantity}
-                    onChange={(e) => {
-                      const newIngs = [...recipe.ingredients];
-                      newIngs[idx].quantity = e.target.value;
-                      setRecipe({ ...recipe, ingredients: newIngs });
-                    }}
-                    className="input-field col-span-3"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Unit"
-                    value={ing.unit}
-                    onChange={(e) => {
-                      const newIngs = [...recipe.ingredients];
-                      newIngs[idx].unit = e.target.value;
-                      setRecipe({ ...recipe, ingredients: newIngs });
-                    }}
-                    className="input-field col-span-2"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newIngs = recipe.ingredients.filter(
-                        (_, i) => i !== idx,
-                      );
-                      setRecipe({ ...recipe, ingredients: newIngs });
-                    }}
-                    className="btn-outline px-3 py-2 text-red-600 hover:bg-red-50 col-span-1"
+          {/* Ingredients */}
+          <Card padding="lg" className="rounded-none">
+            <SectionTitle emoji="🥘" title="Ingredients" />
+            <div className="space-y-3">
+              <AnimatePresence>
+                {recipe.ingredients.map((ing, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -16 }}
+                    className="grid grid-cols-12 gap-2 items-end"
                   >
-                    ✕
-                  </button>
-                </motion.div>
-              ))}
+                    <div className="col-span-6">
+                      <input
+                        type="text"
+                        placeholder="Ingredient name"
+                        value={ing.name}
+                        onChange={(e) => updateIngredient(idx, "name", e.target.value)}
+                        className="w-full px-3 py-2.5 text-sm border-2 border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <input
+                        type="text"
+                        placeholder="Qty"
+                        value={ing.quantity}
+                        onChange={(e) => updateIngredient(idx, "quantity", e.target.value)}
+                        className="w-full px-3 py-2.5 text-sm border-2 border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <input
+                        type="text"
+                        placeholder="Unit"
+                        value={ing.unit}
+                        onChange={(e) => updateIngredient(idx, "unit", e.target.value)}
+                        className="w-full px-3 py-2.5 text-sm border-2 border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="text-red-500 border-red-300 hover:bg-red-50 px-2.5"
+                        onClick={() => removeIngredient(idx)}
+                      >
+                        <X size={14} />
+                      </Button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
-
             <button
               type="button"
-              onClick={handleIngredientAdd}
-              className="mt-6 w-full py-2 border-2 border-dashed border-primary-300 text-primary-600 rounded-lg font-semibold hover:bg-primary-50 transition"
+              onClick={addIngredient}
+              className="mt-4 w-full py-2.5 border-2 border-dashed border-primary-300 text-primary-600 rounded-lg text-sm font-semibold hover:bg-primary-50 transition flex items-center justify-center gap-2"
             >
-              + Add Ingredient
+              <Plus size={16} /> Add Ingredient
             </button>
-          </div>
+          </Card>
 
-          {/* Steps Section */}
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-neutral-900 mb-6">
-              👣 Cooking Steps
-            </h2>
-
-            <div className="space-y-4">
-              {recipe.steps.map((step, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex gap-3"
-                >
-                  <div className="flex-shrink-0 w-10 h-10 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold">
-                    {step.stepNumber}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Describe this step..."
-                    value={step.description}
-                    onChange={(e) => {
-                      const newSteps = [...recipe.steps];
-                      newSteps[idx].description = e.target.value;
-                      setRecipe({ ...recipe, steps: newSteps });
-                    }}
-                    className="input-field flex-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newSteps = recipe.steps.filter((_, i) => i !== idx);
-                      setRecipe({ ...recipe, steps: newSteps });
-                    }}
-                    className="btn-outline px-3 py-2 text-red-600 hover:bg-red-50"
+          {/* Steps */}
+          <Card padding="lg" className="rounded-none">
+            <SectionTitle emoji="👣" title="Cooking Steps" />
+            <div className="space-y-3">
+              <AnimatePresence>
+                {recipe.steps.map((step, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -16 }}
+                    className="flex gap-3 items-center"
                   >
-                    ✕
-                  </button>
-                </motion.div>
-              ))}
+                    <div className="flex-shrink-0 w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                      {step.stepNumber}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Describe this cooking step..."
+                      value={step.description}
+                      onChange={(e) => updateStep(idx, e.target.value)}
+                      className="flex-1 px-3 py-2.5 text-sm border-2 border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-red-500 border-red-300 hover:bg-red-50 px-2.5 flex-shrink-0"
+                      onClick={() => removeStep(idx)}
+                    >
+                      <X size={14} />
+                    </Button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
-
             <button
               type="button"
-              onClick={handleStepAdd}
-              className="mt-6 w-full py-2 border-2 border-dashed border-primary-300 text-primary-600 rounded-lg font-semibold hover:bg-primary-50 transition"
+              onClick={addStep}
+              className="mt-4 w-full py-2.5 border-2 border-dashed border-primary-300 text-primary-600 rounded-lg text-sm font-semibold hover:bg-primary-50 transition flex items-center justify-center gap-2"
             >
-              + Add Step
+              <Plus size={16} /> Add Step
             </button>
-          </div>
+          </Card>
 
-          {/* Submit Section */}
-          <div className="p-8 bg-neutral-50 flex gap-4">
-            <Button
-              type="submit"
-              disabled={loading}
-              loading={loading}
-              className="flex-1"
-              size="lg"
-            >
-              <Upload size={20} />
-              {loading ? "Uploading..." : "Upload Recipe"}
-            </Button>
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="flex-1 btn-outline py-3 px-6 font-semibold"
-            >
-              Cancel
-            </button>
-          </div>
+          {/* Submit */}
+          <Card padding="lg" className="rounded-t-none bg-neutral-50">
+            <div className="flex gap-3">
+              <Button type="submit" loading={loading} size="lg" className="flex-1">
+                <Upload size={18} />
+                {loading ? "Uploading..." : "Upload Recipe"}
+              </Button>
+              <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => navigate("/")}>
+                Cancel
+              </Button>
+            </div>
+          </Card>
         </form>
       </motion.div>
     </div>
